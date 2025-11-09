@@ -133,8 +133,8 @@ public class PlacementManager : MonoBehaviour
         else if (selectedPrefab == estructura)
         {
             tropa = false;
+            coste = costeEstructura; // Estructura
         }
-        coste = costeEstructura; // Estructura
         // ❌ Si no hay suficiente oro, no colocar
         if (tropa && !jugadorManager.GastarOro(coste))
         {
