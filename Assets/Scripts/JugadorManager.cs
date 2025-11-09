@@ -64,4 +64,43 @@ public class JugadorManager : MonoBehaviour
         if (textoMadera != null)
             textoMadera.text = "Madera: " + madera;
     }
+
+    // ====================================================
+    // 🔹 Efecto visual: parpadear el texto de oro si no hay suficiente
+    // ====================================================
+    public void ParpadearOro()
+    {
+        if (textoOro != null)
+            StartCoroutine(ParpadearTextoOroCoroutine());
+    }
+
+    public void ParpadearMadera()
+    {
+        if (textoMadera != null)
+            StartCoroutine(ParpadearTextoMaderaCoroutine());
+    }
+    private System.Collections.IEnumerator ParpadearTextoOroCoroutine()
+    {
+        Color originalColor = textoOro.color;
+
+        for (int i = 0; i < 2; i++)
+        {
+            textoOro.color = Color.red;
+            yield return new WaitForSeconds(0.2f);
+            textoOro.color = originalColor;
+            yield return new WaitForSeconds(0.2f);
+        }
+    }
+    private System.Collections.IEnumerator ParpadearTextoMaderaCoroutine()
+    {
+        Color originalColor = textoMadera.color;
+
+        for (int i = 0; i < 2; i++)
+        {
+            textoMadera.color = Color.red;
+            yield return new WaitForSeconds(0.2f);
+            textoMadera.color = originalColor;
+            yield return new WaitForSeconds(0.2f);
+        }
+    }
 }

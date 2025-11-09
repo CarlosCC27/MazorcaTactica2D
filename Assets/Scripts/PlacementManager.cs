@@ -7,13 +7,21 @@ public class PlacementManager : MonoBehaviour
     [Header("Referencias de UI")]
     public Button botonA;
     public Button botonS;
+    public Button botonE;
 
     [Header("Referencias del Tilemap")]
     public Tilemap tilemap;
 
     [Header("Prefabs o personajes")]
+    public GameObject estructura;
     public GameObject humanoA;
     public GameObject humanoS;
+
+    [Header("Costes de unidades")]
+    private int coste = 0;
+    public int costeSoldado = 5;
+    public int costeArquero = 3;
+    public int costeEstructura = 20;
 
     [Header("Referencias del Jugador")]
     public JugadorManager jugadorManager; // 👈 arrástralo desde el inspector
@@ -21,7 +29,7 @@ public class PlacementManager : MonoBehaviour
     private GameObject previewObject;   // el que sigue al cursor
     private GameObject selectedPrefab;  // el que se colocará
     private Camera mainCamera;
-
+    private bool tropa = false;
     // Guardará qué celdas ya están ocupadas
     private System.Collections.Generic.HashSet<Vector3Int> occupiedCells = new System.Collections.Generic.HashSet<Vector3Int>();
 
@@ -32,6 +40,7 @@ public class PlacementManager : MonoBehaviour
         // Asignar eventos a los botones
         botonA.onClick.AddListener(() => SelectCharacter(humanoA));
         botonS.onClick.AddListener(() => SelectCharacter(humanoS));
+        botonE.onClick.AddListener(() => SelectCharacter(estructura));
     }
 
     void Update()
@@ -69,10 +78,16 @@ public class PlacementManager : MonoBehaviour
 
         // Convertir posición a celda del grid
         Vector3Int cellPos = tilemap.WorldToCell(mouseWorld);
-
-        // Obtener el centro de la celda
         Vector3 cellCenter = tilemap.GetCellCenterWorld(cellPos);
-        cellCenter -= new Vector3(0, tilemap.cellSize.y / 3f, 0);
+        if (tropa)
+        {
+            cellCenter -= new Vector3(0, tilemap.cellSize.y / 3f, 0);
+        }
+        else
+        {
+            cellCenter -= new Vector3(0, 0, 0);
+        }
+        // Obtener el centro de la celda
 
         // Mover el objeto preview
         previewObject.transform.position = cellCenter;
@@ -105,31 +120,64 @@ public class PlacementManager : MonoBehaviour
             return;
 
         // Determinar el coste según el tipo de unidad
-        int coste = 0;
         if (selectedPrefab == humanoS)
-            coste = 5; // Soldado
-        else if (selectedPrefab == humanoA)
-            coste = 3; // Arquero
-
-        // ❌ Si no hay suficiente oro, no colocar
-        if (!jugadorManager.GastarOro(coste))
         {
-            Debug.Log("❌ No tienes suficiente oro para colocar esta unidad");
+            tropa = true;
+            coste = costeSoldado; // Soldado
+        }
+        else if (selectedPrefab == humanoA)
+        {
+            tropa = true;
+            coste = costeArquero; // Arquero
+        }
+        else if (selectedPrefab == estructura)
+        {
+            tropa = false;
+        }
+        coste = costeEstructura; // Estructura
+        // ❌ Si no hay suficiente oro, no colocar
+        if (tropa && !jugadorManager.GastarOro(coste))
+        {
+            Debug.Log("❌ No tienes suficiente oro para colocar esta tropa");
+            jugadorManager.ParpadearOro(); // 🔴 Muestra el parpadeo
+            return;
+        }
+        else if (!tropa && !jugadorManager.GastarMadera(coste))
+        {
+            Debug.Log("❌ No tienes suficiente madera para colocar esta estructura");
+            jugadorManager.ParpadearMadera(); // 🔴 Muestra el parpadeo
             return;
         }
 
-        // Obtener el centro de la celda
-        Vector3 cellCenter = tilemap.GetCellCenterWorld(cellPos);
-        cellCenter -= new Vector3(0, tilemap.cellSize.y / 3f, 0);
+        if (tropa)
+        {
+            Vector3 cellCenter = tilemap.GetCellCenterWorld(cellPos);
+            cellCenter -= new Vector3(0, tilemap.cellSize.y / 3f, 0);
 
-        // Instanciar el personaje en la celda válida
-        GameObject placed = Instantiate(selectedPrefab, cellCenter, Quaternion.identity);
+            // Instanciar el personaje en la celda válida
+            GameObject placed = Instantiate(selectedPrefab, cellCenter, Quaternion.identity);
 
-        // Marcar la celda como ocupada
-        occupiedCells.Add(cellPos);
+            // Marcar la celda como ocupada
+            occupiedCells.Add(cellPos);
 
-        // Restaurar opacidad total
-        SetPreviewTransparency(placed, 1f);
+            // Restaurar opacidad total
+            SetPreviewTransparency(placed, 1f);
+        }
+        else
+        {
+            Debug.Log("Estructura colocada");
+            Vector3 cellCenter = tilemap.GetCellCenterWorld(cellPos);
+            cellCenter -= new Vector3(0, 0, 0);
+
+            // Instanciar el personaje en la celda válida
+            GameObject placed = Instantiate(selectedPrefab, cellCenter, Quaternion.identity);
+
+            // Marcar la celda como ocupada
+            occupiedCells.Add(cellPos);
+
+            // Restaurar opacidad total
+            SetPreviewTransparency(placed, 1f);
+        }
     }
 
     // ====================================================
