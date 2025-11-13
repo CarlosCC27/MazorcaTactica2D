@@ -12,6 +12,18 @@ public class GridManager : MonoBehaviour
 
     void Update()
     {
+        // En fase de acción no interferimos con el resaltado de FaseAccion
+        if (placementManager != null && !placementManager.fasePreparacion)
+        {
+            if (hasHighlighted)
+            {
+                tilemap.SetTileFlags(lastCellPosition, TileFlags.None);
+                tilemap.SetColor(lastCellPosition, Color.white);
+                hasHighlighted = false;
+            }
+            return;
+        }
+
         Vector3Int currentCell = GetMouseCellPosition();
         HandleHighlight(currentCell);
     }

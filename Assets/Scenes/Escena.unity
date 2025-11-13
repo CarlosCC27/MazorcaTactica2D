@@ -153,6 +153,7 @@ MonoBehaviour:
   botonE: {fileID: 125919081}
   fasePreparacion: 1
   tilemap: {fileID: 375841844}
+  gridManager: {fileID: 1208154871}
   estructura: {fileID: 1377599063}
   humanoA: {fileID: 338823918}
   humanoS: {fileID: 2071999303}
