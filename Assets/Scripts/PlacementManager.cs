@@ -8,6 +8,7 @@ public class PlacementManager : MonoBehaviour
     public Button botonA;
     public Button botonS;
     public Button botonE;
+    public bool fasePreparacion = true;
 
     [Header("Referencias del Tilemap")]
     public Tilemap tilemap;
@@ -16,18 +17,19 @@ public class PlacementManager : MonoBehaviour
     public GameObject estructura;
     public GameObject humanoA;
     public GameObject humanoS;
+    public GameObject enemigoPrueba;
 
     [Header("Costes de unidades")]
-    private int coste = 0;
     public int costeSoldado = 5;
     public int costeArquero = 3;
     public int costeEstructura = 20;
+    private int coste = 0;
 
     [Header("Referencias del Jugador")]
-    public JugadorManager jugadorManager; // 👈 arrástralo desde el inspector
+    public JugadorManager jugadorManager; 
 
-    private GameObject previewObject;   // el que sigue al cursor
-    private GameObject selectedPrefab;  // el que se colocará
+    private GameObject previewObject;
+    private GameObject selectedPrefab;
     private Camera mainCamera;
     private bool tropa = false;
     // Guardará qué celdas ya están ocupadas
@@ -41,10 +43,14 @@ public class PlacementManager : MonoBehaviour
         botonA.onClick.AddListener(() => SelectCharacter(humanoA));
         botonS.onClick.AddListener(() => SelectCharacter(humanoS));
         botonE.onClick.AddListener(() => SelectCharacter(estructura));
+
+        PosicionarEnemigoPrueba(enemigoPrueba);
     }
 
     void Update()
     {
+
+        if (!fasePreparacion) return;
         if (previewObject != null)
         {
             MovePreviewToMouse();
@@ -54,6 +60,43 @@ public class PlacementManager : MonoBehaviour
         }
     }
 
+    public void DesactivarColocacion()
+    {
+        fasePreparacion = false;
+
+        // Destruir cualquier preview activo
+        if (previewObject != null)
+        {
+            Destroy(previewObject);
+            previewObject = null;
+        }
+
+        selectedPrefab = null; // quitar referencia al prefab seleccionado
+    }
+    void PosicionarEnemigoPrueba(GameObject enemigo)
+    {
+        // Celda objetivo
+        Vector3Int targetCell = new Vector3Int(0, 0, 0);
+
+        // Verificar que existe un tile en esa celda
+        if (!tilemap.HasTile(targetCell))
+        {
+            Debug.LogWarning("❌ La celda [0,0] no tiene un tile, no se puede colocar el enemigo.");
+            return;
+        }
+
+        // Obtener el centro del tile
+        Vector3 cellCenter = tilemap.GetCellCenterWorld(targetCell);
+
+        // Instanciar el objeto (usa el prefab que quieras)
+        GameObject enemigoInstanciado = Instantiate(enemigo, cellCenter, Quaternion.identity);
+
+        // Marcar la celda como ocupada
+        occupiedCells.Add(targetCell);
+
+        // Asegurar opacidad total
+        SetPreviewTransparency(enemigoInstanciado, 1f);
+    }
     // ====================================================
     // 🔹 Selecciona el personaje y crea su preview
     // ====================================================

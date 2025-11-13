@@ -7,6 +7,9 @@ public class ButtonManager : MonoBehaviour
     public Button botonA;
     public Button botonS;
     public Button botonE;
+    public Button botonNF;
+
+    public PlacementManager pm;
 
     void Start()
     {
@@ -14,20 +17,46 @@ public class ButtonManager : MonoBehaviour
         botonA.onClick.AddListener(() => OnButtonPressed(botonA, new List<Button> { botonS, botonE }));
         botonS.onClick.AddListener(() => OnButtonPressed(botonS, new List<Button> { botonA, botonE }));
         botonE.onClick.AddListener(() => OnButtonPressed(botonE, new List<Button> { botonA, botonS }));
+        botonNF.onClick.AddListener(() => OnButtonPressed(botonNF, new List<Button> { botonA, botonS, botonE }));
     }
 
     void OnButtonPressed(Button botonPulsado, List<Button> botonesOtros)
     {
-        // Desactivar el botón pulsado
-        botonPulsado.interactable = false;
-        SetButtonColor(botonPulsado, Color.gray);
-        //Debug.Log("Botón " + botonPulsado.name + " pulsado.");
-
-        // Reactivar el otro botón
-        foreach (Button boton in botonesOtros)
+        if (botonPulsado == botonNF)
         {
-            boton.interactable = true;
-            SetButtonColor(boton, Color.white);
+            if (botonesOtros[0].gameObject.activeSelf == false)
+            {
+                foreach (Button boton in botonesOtros)
+                {
+                    boton.gameObject.SetActive(true);
+                    boton.interactable = true;
+                    SetButtonColor(boton, Color.white);
+                }
+                pm.fasePreparacion = true;
+            }
+            else
+            {
+                foreach (Button boton in botonesOtros)
+                {
+                    boton.gameObject.SetActive(false);
+                }
+
+                if(pm != null)
+                {
+                    pm.DesactivarColocacion();
+                }
+            }
+            return;
+        }
+        else
+        {
+            botonPulsado.interactable = false;
+            SetButtonColor(botonPulsado, Color.gray);
+            foreach (Button boton in botonesOtros)
+            {
+                boton.interactable = true;
+                SetButtonColor(boton, Color.white);
+            } 
         }
     }
 

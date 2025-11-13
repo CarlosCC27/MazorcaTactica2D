@@ -32,8 +32,7 @@ public class GridManager : MonoBehaviour
     // =========================================
     void HandleHighlight(Vector3Int cellPosition)
     {
-        if (cellPosition == lastCellPosition)
-            return;
+        if (cellPosition == lastCellPosition) return;
 
         // Restaurar color anterior
         if (hasHighlighted)
@@ -42,18 +41,13 @@ public class GridManager : MonoBehaviour
             tilemap.SetColor(lastCellPosition, Color.white);
         }
 
-        // Aplicar nuevo resaltado si hay un tile
         if (tilemap.HasTile(cellPosition))
         {
             tilemap.SetTileFlags(cellPosition, TileFlags.None);
-
             bool cellOccupied = placementManager != null && placementManager.IsCellOccupied(cellPosition);
 
             // Blanco si libre, rojo si ocupada
-            Color color = cellOccupied
-                ? new Color(1f, 0.3f, 0.3f, 1f)
-                : new Color(1f, 1f, 1f, 0.75f);
-
+            Color color = cellOccupied ? new Color(1f, 0.3f, 0.3f, 1f) : new Color(1f, 1f, 1f, 0.75f);
             tilemap.SetColor(cellPosition, color);
             hasHighlighted = true;
         }
