@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using System.Collections.Generic;
-
 public class GridManager : MonoBehaviour
 {
     [Header("Referencias")]

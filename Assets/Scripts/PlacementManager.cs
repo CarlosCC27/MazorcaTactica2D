@@ -33,7 +33,8 @@ public class PlacementManager : MonoBehaviour
     private Camera mainCamera;
     private bool tropa = false;
     // Guardará qué celdas ya están ocupadas
-    private System.Collections.Generic.HashSet<Vector3Int> occupiedCells = new System.Collections.Generic.HashSet<Vector3Int>();
+    private System.Collections.Generic.HashSet<Vector3Int> occupiedCells = 
+            new System.Collections.Generic.HashSet<Vector3Int>();
 
     void Start()
     {
