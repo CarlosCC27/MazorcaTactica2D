@@ -10,17 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9af3505a2eded3b4cb9075877c06679c, type: 3}
-  m_Name: Guerrero
+  m_Name: Muro
   m_EditorClassIdentifier: Assembly-CSharp::TropaData
-  nombreTropa: Guerrero
-  descripcion: Te mete un guantazo de cerca que te deja tonto.
-  esEstructura: 0
+  nombreTropa: Muro
+  descripcion: Carlos mariquita
+  esEstructura: 1
   esEnemigo: 0
-  vida: 5
-  ataque: 2
-  defensa: 5
-  rangoMovimiento: 3
-  rangoAtaque: 1
-  costeOro: 5
-  costeMadera: 0
-  prefabUnidad: {fileID: 6024261810931218555, guid: db7cc2f714347ab46a0bccefdf9241bc, type: 3}
+  vida: 10
+  ataque: 0
+  defensa: 10
+  rangoMovimiento: 0
+  rangoAtaque: 0
+  costeOro: 0
+  costeMadera: 10
+  prefabUnidad: {fileID: 1787615214400669952, guid: 04fa448d6cca140459535b060bdb3925, type: 3}

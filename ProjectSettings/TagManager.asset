@@ -18,7 +18,7 @@ TagManager:
   - 
   - 
   - 
-  - 
+  - Tropas
   - 
   - 
   - 
@@ -43,6 +43,9 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Tropas
+    uniqueID: 3956451163
     locked: 0
   m_RenderingLayers:
   - Default
