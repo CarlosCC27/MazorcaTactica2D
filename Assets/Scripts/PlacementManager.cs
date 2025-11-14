@@ -59,8 +59,26 @@ public class PlacementManager : MonoBehaviour
             if (Input.GetMouseButtonDown(0))
                 PlaceCharacter();
         }
+        if (Input.GetMouseButtonDown(0))
+        {
+            GetClickedCellIndices();
+        }
     }
 
+    void GetClickedCellIndices()
+    {
+        Vector3 mouseWorld = mainCamera.ScreenToWorldPoint(Input.mousePosition);
+        mouseWorld.z = 0;
+
+        Vector3Int cellPos = tilemap.WorldToCell(mouseWorld);
+
+        // Solo si hay tile en esa celda
+        if (tilemap.HasTile(cellPos))
+        {
+            Debug.Log($"Celda clicada: X={cellPos.x}, Y={cellPos.y}, Z={cellPos.z}");
+            // Aquí puedes pasar cellPos a otro método si quieres
+        }
+    }
     public void DesactivarColocacion()
     {
         fasePreparacion = false;
@@ -263,5 +281,14 @@ public class PlacementManager : MonoBehaviour
     public bool IsCellOccupied(Vector3Int cell)
     {
         return occupiedCells.Contains(cell);
+    }
+
+    // Permite marcar o desmarcar una celda como ocupada
+    public void SetCellOccupied(Vector3Int cell, bool occupied)
+    {
+        if (occupied)
+            occupiedCells.Add(cell);
+        else
+            occupiedCells.Remove(cell);
     }
 }
