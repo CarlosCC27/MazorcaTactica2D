@@ -3355,6 +3355,10 @@ PrefabInstance:
       value: Enemigo1
       objectReference: {fileID: 0}
     - target: {fileID: 6194015696605001386, guid: a9823d640c8424348bf599518c19d05e, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6194015696605001386, guid: a9823d640c8424348bf599518c19d05e, type: 3}
       propertyPath: m_TagString
       value: Enemy
       objectReference: {fileID: 0}
@@ -6890,7 +6894,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2071999303}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e4d941197c0262b47a30c3beb1372dbb, type: 3}
   m_Name: 
