@@ -327,6 +327,8 @@ public class PlacementManager : MonoBehaviour
         else
             occupiedCells.Remove(cell);
     }
+
+// TENGO QUE MIRARLO, NO SE FUNCIONA. LA FASE DE ATAQUE NO VA TODAVÍA. ---------
     void GoToAttackPhase()
     {
         if (faseAtaqueManager != null)
@@ -338,6 +340,7 @@ public class PlacementManager : MonoBehaviour
             faseAtaqueManager.enabled = true;
         }
     }
+// -----------------------------------------------------------------------------
 
     // ====================================================
     // 🔹 FUNCIÓN PÚBLICA PARA EL BOTÓN DE CAMBIO DE FASE
