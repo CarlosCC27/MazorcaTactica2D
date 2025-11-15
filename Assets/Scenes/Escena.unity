@@ -3162,6 +3162,9 @@ MonoBehaviour:
   highlightDuration: 1.2
   emptyCellColor: {r: 1, g: 1, b: 0, a: 0.65}
   occupiedCellColor: {r: 1, g: 0.25, b: 0.25, a: 0.85}
+  pathColor: {r: 0, g: 1, b: 1, a: 0.7}
+  moveSpeed: 3
+  stepThreshold: 0.01
 --- !u!1 &773038716
 GameObject:
   m_ObjectHideFlags: 0
@@ -5059,8 +5062,8 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1306187156}
   - {fileID: 125919080}
+  - {fileID: 1306187156}
   - {fileID: 1544748546}
   m_Father: {fileID: 382951945}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

@@ -47,7 +47,7 @@ public class PlacementManager : MonoBehaviour
 
     private bool tropa;
     // Guardará qué celdas ya están ocupadas
-    private System.Collections.Generic.HashSet<Vector3Int> occupiedCells = 
+    private System.Collections.Generic.HashSet<Vector3Int> occupiedCells =
             new System.Collections.Generic.HashSet<Vector3Int>();
 
     void Start()
