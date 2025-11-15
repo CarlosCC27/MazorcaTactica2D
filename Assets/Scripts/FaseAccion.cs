@@ -46,9 +46,25 @@ public class FaseAccion : MonoBehaviour
                 Vector3Int cellPos = placementManager.tilemap.WorldToCell(clickedObject.transform.position);
 
                 int rango = 1;
+
+                var controladorTropa = clickedObject.GetComponent<ControladorTropa>();
+
+                if(controladorTropa != null && controladorTropa.datosBase != null)
+                {
+                    //La tropa tiene que tener un rango de movimienot en el ScriptableObject
+                    rango = Mathf.Max(0, controladorTropa.datosBase.rangoMovimiento);
+                    Debug.Log($"Unidad seleccionada: {controladorTropa.datosBase.nombreTropa}. Rango de Movimiento: {rango}");
+                }
+                else
+                {
+                    Debug.LogWarning("⚠️ No se pudo obtener ControladorTropa o TropaData. Usando rango por defecto (1).");
+                }
+
+                /*
                 var stats = clickedObject.GetComponent<Stats>();
                 if (stats != null)
                     rango = Mathf.Max(0, stats.movimiento);
+                */
 
                 selectedAlly = clickedObject;
                 HighlightAdjacentCells(cellPos, rango);
@@ -159,7 +175,7 @@ public class FaseAccion : MonoBehaviour
         clearCoroutine = null;
     }
 
-    void ClearHighlights()
+    public void ClearHighlights()
     {
         if (placementManager == null || placementManager.tilemap == null) return;
         foreach (var cell in currentHighlights)

@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: db7e3892b6034d8448a84f7d23b34d00
+guid: e5b3cf68c91ef9a44885fcf3798e7ad4
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -5937764268318024347
-    second: Espada_0
+      213: 7581148217876485614
+    second: MuroEnemigo_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,23 +100,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Espada_0
+      name: MuroEnemigo_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 4
-        width: 24
-        height: 15
-      alignment: 9
-      pivot: {x: 0.5, y: 0.25}
+        x: 4
+        y: 0
+        width: 16
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 56d95ea8bd2d89da0800000000000000
-      internalID: -5937764268318024347
+      spriteID: ee51d143326a53960800000000000000
+      internalID: 7581148217876485614
       vertices: []
       indices: 
       edges: []
@@ -125,7 +125,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: a7d954326fc586d4898987d851e5a169
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Espada_0: -5937764268318024347
+      MuroEnemigo_0: 7581148217876485614
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

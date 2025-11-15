@@ -1,37 +1,51 @@
+using Mono.Cecil.Cil;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
 
 public class PlacementManager : MonoBehaviour
 {
+    /*
     [Header("Referencias de UI")]
     public Button botonA;
     public Button botonS;
     public Button botonE;
+    */
     public bool fasePreparacion = true;
+    
 
     [Header("Referencias del Tilemap")]
     public Tilemap tilemap;
 
+    /*
     [Header("Prefabs o personajes")]
     public GameObject estructura;
     public GameObject humanoA;
     public GameObject humanoS;
     public GameObject enemigoPrueba;
+    */
 
+    /*
     [Header("Costes de unidades")]
     public int costeSoldado = 5;
     public int costeArquero = 3;
-    public int costeEstructura = 20;
-    private int coste = 0;
+    public int costeEstructura = 20
+    */
+    private int coste;
 
     [Header("Referencias del Jugador")]
-    public JugadorManager jugadorManager; 
+    public JugadorManager jugadorManager;
+
+    [Header("Referencias de Otros Managers")]
+    public FaseAccion faseAccionManager;
 
     private GameObject previewObject;
     private GameObject selectedPrefab;
     private Camera mainCamera;
-    private bool tropa = false;
+
+    private TropaData selectedTropaData;
+
+    private bool tropa;
     // Guardará qué celdas ya están ocupadas
     private System.Collections.Generic.HashSet<Vector3Int> occupiedCells = 
             new System.Collections.Generic.HashSet<Vector3Int>();
@@ -41,11 +55,11 @@ public class PlacementManager : MonoBehaviour
         mainCamera = Camera.main;
 
         // Asignar eventos a los botones
-        botonA.onClick.AddListener(() => SelectCharacter(humanoA));
-        botonS.onClick.AddListener(() => SelectCharacter(humanoS));
-        botonE.onClick.AddListener(() => SelectCharacter(estructura));
+        //botonA.onClick.AddListener(() => SelectCharacter(humanoA));
+        //botonS.onClick.AddListener(() => SelectCharacter(humanoS));
+        //botonE.onClick.AddListener(() => SelectCharacter(estructura));
 
-        PosicionarEnemigoPrueba(enemigoPrueba);
+        //PosicionarEnemigoPrueba(enemigoPrueba);
     }
 
     void Update()
@@ -119,13 +133,23 @@ public class PlacementManager : MonoBehaviour
     // ====================================================
     // 🔹 Selecciona el personaje y crea su preview
     // ====================================================
-    void SelectCharacter(GameObject prefab)
+    public void SelectCharacter(GameObject prefab)
     {
         // Destruir cualquier preview anterior
         if (previewObject != null)
             Destroy(previewObject);
 
         selectedPrefab = prefab;
+
+        ControladorTropa controlador = prefab.GetComponent<ControladorTropa>();
+
+        selectedTropaData = controlador.datosBase;
+
+        tropa = !selectedTropaData.esEstructura;
+        coste = tropa ? selectedTropaData.costeOro : selectedTropaData.costeMadera;
+
+        Debug.Log($"Unidad seleccionada: {selectedTropaData.nombreTropa}. Coste: {coste}. Es Tropa: {tropa}");
+
         previewObject = Instantiate(prefab);
         SetPreviewTransparency(previewObject, 0.5f);
     }
@@ -141,6 +165,7 @@ public class PlacementManager : MonoBehaviour
         // Convertir posición a celda del grid
         Vector3Int cellPos = tilemap.WorldToCell(mouseWorld);
         Vector3 cellCenter = tilemap.GetCellCenterWorld(cellPos);
+        /*
         if (tropa)
         {
             cellCenter -= new Vector3(0, tilemap.cellSize.y / 3f, 0);
@@ -149,6 +174,7 @@ public class PlacementManager : MonoBehaviour
         {
             cellCenter -= new Vector3(0, 0, 0);
         }
+        */
         // Obtener el centro de la celda
 
         // Mover el objeto preview
@@ -182,6 +208,7 @@ public class PlacementManager : MonoBehaviour
             return;
 
         // Determinar el coste según el tipo de unidad
+        /*
         if (selectedPrefab == humanoS)
         {
             tropa = true;
@@ -197,6 +224,7 @@ public class PlacementManager : MonoBehaviour
             tropa = false;
             coste = costeEstructura; // Estructura
         }
+        */
         // ❌ Si no hay suficiente oro, no colocar
         if (tropa && !jugadorManager.GastarOro(coste))
         {
@@ -210,11 +238,11 @@ public class PlacementManager : MonoBehaviour
             jugadorManager.ParpadearMadera(); // 🔴 Muestra el parpadeo
             return;
         }
-
+        
         if (tropa)
         {
             Vector3 cellCenter = tilemap.GetCellCenterWorld(cellPos);
-            cellCenter -= new Vector3(0, tilemap.cellSize.y / 3f, 0);
+            //cellCenter -= new Vector3(0, tilemap.cellSize.y / 3f, 0);
 
             // Instanciar el personaje en la celda válida
             GameObject placed = Instantiate(selectedPrefab, cellCenter, Quaternion.identity);
@@ -224,12 +252,19 @@ public class PlacementManager : MonoBehaviour
 
             // Restaurar opacidad total
             SetPreviewTransparency(placed, 1f);
+
+
+            //Correccion visual
+            if (faseAccionManager != null)
+            {
+                faseAccionManager.ClearHighlights();
+            }
         }
         else
         {
             Debug.Log("Estructura colocada");
             Vector3 cellCenter = tilemap.GetCellCenterWorld(cellPos);
-            cellCenter -= new Vector3(0, 0, 0);
+            //cellCenter -= new Vector3(0, 0, 0);
 
             // Instanciar el personaje en la celda válida
             GameObject placed = Instantiate(selectedPrefab, cellCenter, Quaternion.identity);
@@ -290,5 +325,50 @@ public class PlacementManager : MonoBehaviour
             occupiedCells.Add(cell);
         else
             occupiedCells.Remove(cell);
+    }
+
+    // ====================================================
+    // 🔹 FUNCIÓN PÚBLICA PARA EL BOTÓN DE CAMBIO DE FASE
+    // ====================================================
+    public void TogglePhase()
+    {
+        if (fasePreparacion)
+        {
+            // 1. TRANSICIÓN: PREPARACIÓN -> ACCIÓN
+
+            // Llama a la lógica de limpieza de colocación (Desactiva la colocación y el preview)
+            DesactivarColocacion(); // Establece fasePreparacion = false
+
+            // Activa la lógica de la Fase de Acción
+            if (faseAccionManager != null)
+            {
+                faseAccionManager.enabled = true; // Activa el Update de FaseAccion
+                Debug.Log("🚀 Fase cambiada a ACCIÓN. Colocación desactivada.");
+            }
+        }
+        
+        else
+        {
+            // 2. TRANSICIÓN: ACCIÓN -> PREPARACIÓN
+
+            // Desactiva la lógica de la Fase de Acción
+            if (faseAccionManager != null)
+            {
+                faseAccionManager.enabled = false; // Desactiva el Update de FaseAccion
+                // Llama a su función de limpieza si es necesario (limpia selecciones y resaltados)
+                faseAccionManager.ClearHighlights();
+            }
+
+            // Rehabilita la fase de preparación
+            fasePreparacion = true;
+
+            Debug.Log("🏠 Fase cambiada a PREPARACIÓN. Colocación activa.");
+
+            // Si necesitas que los botones de UI de selección de tropa se muestren,
+            // la responsabilidad recae en el sistema que los gestiona, NO en PlacementManager.
+            // Asegúrate de que el botón de cambio de fase oculte/muestre los botones A/S/E 
+            // a través de su propia configuración 'OnClick' en el Inspector, además de llamar a TogglePhase().
+        }
+        
     }
 }

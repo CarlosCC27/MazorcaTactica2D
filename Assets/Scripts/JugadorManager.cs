@@ -4,8 +4,8 @@ using TMPro;
 public class JugadorManager : MonoBehaviour
 {
     [Header("Recursos iniciales")]
-    public int oro = 100;
-    public int madera = 100;
+    public int oro;
+    public int madera;
 
     [Header("UI de recursos")]
     public TMP_Text textoOro;

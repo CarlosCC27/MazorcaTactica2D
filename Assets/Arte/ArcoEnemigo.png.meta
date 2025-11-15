@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: db7e3892b6034d8448a84f7d23b34d00
+guid: b50368ee58f319749b5686a81422044a
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -5937764268318024347
-    second: Espada_0
+      213: -2935846198376506492
+    second: ArcoEnemigo_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Espada_0
+      name: ArcoEnemigo_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 4
+        y: 2
         width: 24
-        height: 15
+        height: 20
       alignment: 9
       pivot: {x: 0.5, y: 0.25}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 56d95ea8bd2d89da0800000000000000
-      internalID: -5937764268318024347
+      spriteID: 48b5696ff67c147d0800000000000000
+      internalID: -2935846198376506492
       vertices: []
       indices: 
       edges: []
@@ -125,7 +125,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: a7d954326fc586d4898987d851e5a169
+    spriteID: c374161a7c8ff9e4db4bdbc28bc3d842
     internalID: 0
     vertices: []
     indices: 
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Espada_0: -5937764268318024347
+      ArcoEnemigo_0: -2935846198376506492
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

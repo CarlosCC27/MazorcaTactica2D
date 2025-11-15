@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9af3505a2eded3b4cb9075877c06679c, type: 3}
+  m_Name: Muro Enemigo
+  m_EditorClassIdentifier: Assembly-CSharp::TropaData
+  nombreTropa: Muro
+  descripcion: Carlos mariquita
+  esEstructura: 1
+  esEnemigo: 1
+  vida: 10
+  ataque: 0
+  defensa: 10
+  rangoMovimiento: 0
+  rangoAtaque: 0
+  costeOro: 0
+  costeMadera: 10
+  prefabUnidad: {fileID: 1787615214400669952, guid: 04fa448d6cca140459535b060bdb3925, type: 3}

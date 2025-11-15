@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5559689492380781925}
   - component: {fileID: 6668446938154999969}
-  m_Layer: 10
+  m_Layer: 9
   m_Name: Sombra_0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -76,8 +76,8 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: -338516133
+  m_SortingLayer: 1
   m_SortingOrder: 0
   m_Sprite: {fileID: -114595351847970599, guid: 01730ec1db9f2e34b8a1b46b6f865c7b, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 0.39215687}
@@ -101,9 +101,10 @@ GameObject:
   - component: {fileID: 2757035179154592616}
   - component: {fileID: 6235366074871533730}
   - component: {fileID: -8975020827332859819}
-  m_Layer: 10
+  - component: {fileID: 6800185386542145573}
+  m_Layer: 9
   m_Name: Enemigo
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -171,7 +172,7 @@ SpriteRenderer:
   m_SortingLayerID: -338516133
   m_SortingLayer: 1
   m_SortingOrder: 1
-  m_Sprite: {fileID: -5937764268318024347, guid: db7e3892b6034d8448a84f7d23b34d00, type: 3}
+  m_Sprite: {fileID: -2093909347552285207, guid: c5da4d1d3ce02154bac3927aab78b576, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -195,3 +196,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ControladorTropa
   datosBase: {fileID: 11400000, guid: 82c7da5ee4aa637498b60bc837148b6b, type: 2}
+--- !u!65 &6800185386542145573
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6024261810931218555}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 0.625, z: 0.2}
+  m_Center: {x: 0, y: 0.15625, z: 0}
