@@ -38,6 +38,7 @@ public class PlacementManager : MonoBehaviour
 
     [Header("Referencias de Otros Managers")]
     public FaseAccion faseAccionManager;
+    public FaseAtaque faseAtaqueManager;
 
     private GameObject previewObject;
     private GameObject selectedPrefab;
@@ -326,6 +327,17 @@ public class PlacementManager : MonoBehaviour
         else
             occupiedCells.Remove(cell);
     }
+    void GoToAttackPhase()
+    {
+        if (faseAtaqueManager != null)
+        {
+            // Llamada explícita: arranca la fase de ataque ahora
+            faseAtaqueManager.StartPlayerAttackPhase();
+
+            // Opcional: también activarlo si quieres que Update() corra
+            faseAtaqueManager.enabled = true;
+        }
+    }
 
     // ====================================================
     // 🔹 FUNCIÓN PÚBLICA PARA EL BOTÓN DE CAMBIO DE FASE
@@ -371,4 +383,5 @@ public class PlacementManager : MonoBehaviour
         }
         
     }
+    
 }
