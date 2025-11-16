@@ -255,6 +255,7 @@ public class FaseAtaque : MonoBehaviour
     void PerformAttack(GameObject attacker, GameObject target)
     {
         if (attacker == null || target == null) return;
+         StartCoroutine(AttackMoveAnimation(attacker, target.transform.position));
 
         var ctrlAtt = attacker.GetComponent<ControladorTropa>();
         var ctrlTgt = target.GetComponent<ControladorTropa>();
@@ -327,5 +328,40 @@ public class FaseAtaque : MonoBehaviour
     {
         ClearAllHighlights();
     }
+
+    private IEnumerator AttackMoveAnimation(GameObject attacker, Vector3 targetPosition, float moveDistance = 0.3f, float speed = 8f)
+{
+    if (attacker == null) yield break;
+
+    Vector3 startPos = attacker.transform.position;
+    Vector3 direction = (targetPosition - startPos).normalized;
+
+    // Posición a la que se moverá (un poco hacia el enemigo)
+    Vector3 attackPos = startPos + direction * moveDistance;
+
+    // Mover hacia el ataque
+    float t = 0f;
+    while (t < 1f)
+    {
+        t += Time.deltaTime * speed;
+        attacker.transform.position = Vector3.Lerp(startPos, attackPos, t);
+        yield return null;
+    }
+
+    // Breve pausa en la posición de ataque
+    yield return new WaitForSeconds(0.05f);
+
+    // Volver a la posición original
+    t = 0f;
+    while (t < 1f)
+    {
+        t += Time.deltaTime * speed;
+        attacker.transform.position = Vector3.Lerp(attackPos, startPos, t);
+        yield return null;
+    }
+
+    attacker.transform.position = startPos; // asegurar que queda exacta
+}
+
 }
 

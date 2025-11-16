@@ -20,7 +20,7 @@ MonoBehaviour:
   ataque: 5
   defensa: 2
   rangoMovimiento: 2
-  rangoAtaque: 5
+  rangoAtaque: 3
   costeOro: 10
   costeMadera: 0
   prefabUnidad: {fileID: 835016270662335228, guid: 5129d00ba2b6e3f4fbab57f015bb4bbe, type: 3}
