@@ -18,7 +18,7 @@ MonoBehaviour:
   esEnemigo: 0
   vida: 10
   ataque: 0
-  defensa: 10
+  defensa: 2
   rangoMovimiento: 0
   rangoAtaque: 0
   costeOro: 0
