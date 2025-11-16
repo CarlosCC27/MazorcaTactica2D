@@ -328,18 +328,30 @@ public class PlacementManager : MonoBehaviour
             occupiedCells.Remove(cell);
     }
 
-// TENGO QUE MIRARLO, NO SE FUNCIONA. LA FASE DE ATAQUE NO VA TODAVÍA. ---------
-    void GoToAttackPhase()
-    {
-        if (faseAtaqueManager != null)
-        {
-            // Llamada explícita: arranca la fase de ataque ahora
-            faseAtaqueManager.StartPlayerAttackPhase();
+// Dentro de PlacementManager
+public void GoToAttackPhase()
+{
+    Debug.Log("PlacementManager: Entrando en Fase ATAQUE");
 
-            // Opcional: también activarlo si quieres que Update() corra
-            faseAtaqueManager.enabled = true;
-        }
+    // 1) Asegurar que la colocación esté desactivada (pone fasePreparacion = false)
+    DesactivarColocacion();
+
+    // 2) Asegurarnos de que la fase de acción esté apagada y limpie sus highlights
+    if (faseAccionManager != null)
+    {
+        faseAccionManager.ClearHighlights();
+        faseAccionManager.enabled = false;
     }
+
+    // 3) Iniciar la fase de ataque
+    if (faseAtaqueManager != null)
+    {
+        // activamos el componente y arrancamos su lógica
+        faseAtaqueManager.enabled = true;
+        faseAtaqueManager.StartPlayerAttackPhase();
+    }
+}
+
 // -----------------------------------------------------------------------------
 
     // ====================================================

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 
+
 // Asegura que este script siempre tenga el componente SpriteRenderer
 [RequireComponent(typeof(SpriteRenderer))]
 public class ControladorTropa : MonoBehaviour
@@ -88,6 +89,11 @@ public class ControladorTropa : MonoBehaviour
     public bool IsAlive()
     {
         return saludActual > 0;
+    }
+    //getter
+    public int GetSaludActual()
+    {
+        return saludActual;
     }
 
     // Método de ejemplo para ser usado por la IA o el Jugador

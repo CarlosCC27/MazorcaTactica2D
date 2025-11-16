@@ -124,66 +124,113 @@ public class FaseAtaque : MonoBehaviour
     }
 
     void HighlightAttackRangeAndEnemies(GameObject unit, int rango)
+{
+    ClearRangeHighlights();
+    if (placementManager == null || placementManager.tilemap == null) return;
+    if (rango <= 0) return;
+
+    Vector3Int centerCell = placementManager.tilemap.WorldToCell(unit.transform.position);
+    var tilemap = placementManager.tilemap;
+
+    Debug.Log($"[FaseAtaque] Begin highlight for unit '{unit.name}' at cell {centerCell} with rango {rango}");
+
+    // Si quieres que también se marque la celda donde está la unidad, descomenta:
+    // tilemap.SetTileFlags(centerCell, TileFlags.None);
+    // tilemap.SetColor(centerCell, attackRangeColor);
+    // rangeHighlights.Add(centerCell);
+
+    var visited = new HashSet<Vector3Int>();
+    var queue = new Queue<Vector3Int>();
+    var distance = new Dictionary<Vector3Int, int>();
+
+    visited.Add(centerCell);
+    distance[centerCell] = 0;
+    queue.Enqueue(centerCell);
+
+    Vector3Int[] directions = new Vector3Int[]
     {
-        ClearRangeHighlights();
-        if (placementManager == null || placementManager.tilemap == null) return;
-        if (rango <= 0) return;
+        new Vector3Int(1,0,0),
+        new Vector3Int(-1,0,0),
+        new Vector3Int(0,1,0),
+        new Vector3Int(0,-1,0)
+    };
 
-        Vector3Int centerCell = placementManager.tilemap.WorldToCell(unit.transform.position);
-        var tilemap = placementManager.tilemap;
+    while (queue.Count > 0)
+    {
+        var cell = queue.Dequeue();
+        int d = distance[cell];
 
-        // BFS simple por distancia Manhattan para marcar celdas de ataque
-        var visited = new HashSet<Vector3Int>();
-        var queue = new Queue<Vector3Int>();
-        var distance = new Dictionary<Vector3Int, int>();
-
-        visited.Add(centerCell);
-        distance[centerCell] = 0;
-        queue.Enqueue(centerCell);
-
-        Vector3Int[] directions = new Vector3Int[]
+        foreach (var dir in directions)
         {
-            new Vector3Int(1,0,0),
-            new Vector3Int(-1,0,0),
-            new Vector3Int(0,1,0),
-            new Vector3Int(0,-1,0)
-        };
+            var neighbor = cell + dir;
+            if (visited.Contains(neighbor)) continue;
 
-        while (queue.Count > 0)
-        {
-            var cell = queue.Dequeue();
-            int d = distance[cell];
-
-            foreach (var dir in directions)
+            // asegurarse de que existe tile en esa celda
+            if (!tilemap.HasTile(neighbor))
             {
-                var neighbor = cell + dir;
-                if (visited.Contains(neighbor)) continue;
-                if (!tilemap.HasTile(neighbor)) continue;
+                visited.Add(neighbor);
+                continue;
+            }
 
-                int nd = d + 1;
-                if (nd > rango) continue;
+            int nd = d + 1;
+            if (nd > rango)
+            {
+                visited.Add(neighbor);
+                continue;
+            }
 
-                // Resaltar la celda
-                tilemap.SetTileFlags(neighbor, TileFlags.None);
-                tilemap.SetColor(neighbor, attackRangeColor);
-                rangeHighlights.Add(neighbor);
+            // Resaltar la celda de alcance
+            tilemap.SetTileFlags(neighbor, TileFlags.None);
+            tilemap.SetColor(neighbor, attackRangeColor);
+            rangeHighlights.Add(neighbor);
+            Debug.Log($"[FaseAtaque] Resalto celda {neighbor}");
 
-                // Si hay un enemigo con collider en esa celda, también lo resaltamos
-                Vector3 neighborCenter = tilemap.GetCellCenterWorld(neighbor);
-                Collider2D hit = Physics2D.OverlapPoint(neighborCenter);
-                if (hit != null && hit.gameObject.CompareTag("Enemy"))
+            // Detección: buscar todos los colliders cerca del centro y filtrar:
+            Vector3 neighborCenter = tilemap.GetCellCenterWorld(neighbor);
+
+            // Usamos OverlapCircleAll para no perdernos nada; filtramos luego
+            Collider2D[] hits = Physics2D.OverlapCircleAll(neighborCenter, 0.18f);
+            foreach (var h in hits)
+            {
+                if (h == null) continue;
+                GameObject hitObj = h.gameObject;
+
+                // IGNORAR a la propia unidad (evita que te detectes a ti mismo si el collider cubre el centro)
+                if (hitObj == unit) continue;
+
+                // Solo aceptar objetos con tag "Enemy"
+                if (hitObj.CompareTag("Enemy"))
                 {
                     tilemap.SetTileFlags(neighbor, TileFlags.None);
                     tilemap.SetColor(neighbor, enemyHighlightColor);
-                    enemyHighlights.Add(neighbor);
-                }
+                    if (!enemyHighlights.Contains(neighbor))
+                        enemyHighlights.Add(neighbor);
 
-                visited.Add(neighbor);
-                distance[neighbor] = nd;
-                queue.Enqueue(neighbor);
+                    // Intentar obtener ControladorTropa para leer la vida actual
+                    var ctrlEnem = hitObj.GetComponent<ControladorTropa>();
+                    if (ctrlEnem != null)
+                    {
+                        Debug.Log($"[FaseAtaque] Enemigo detectado en {neighbor}: {hitObj.name} | Vida actual: {ctrlEnem.GetSaludActual()}");
+                    }
+                    else
+                    {
+                    Debug.Log($"[FaseAtaque] Enemigo detectado en {neighbor}: {hitObj.name} | No tiene ControladorTropa");
+                    }
+                }
+                else
+                {
+                    Debug.Log($"[FaseAtaque] Collider en {neighbor} -> {hitObj.name} (tag={hitObj.tag})");
+                }
             }
+
+            visited.Add(neighbor);
+            distance[neighbor] = nd;
+            queue.Enqueue(neighbor);
         }
     }
+}
+
+
 
     void ClearRangeHighlights()
     {
@@ -223,7 +270,24 @@ public class FaseAtaque : MonoBehaviour
 
         ctrlTgt.TakeDamage(damage);
 
-        // Aquí podrías reproducir animaciones, efectos, sonido, etc.
+        // Aquí animaciones, efectos, sonido, etc.
+
+        // --- debug: vida restante o muerte ---
+        if (ctrlTgt != null)
+        {
+            if (ctrlTgt.IsAlive())
+            {
+                Debug.Log($"[FaseAtaque] Vida restante de {ctrlTgt.datosBase.nombreTropa} ({target.name}): {ctrlTgt.GetSaludActual()}");
+            }
+            else
+            {
+            Debug.Log($"[FaseAtaque] {ctrlTgt.datosBase.nombreTropa} ({target.name}) ha muerto.");
+            }
+        }
+        else
+        {
+            Debug.Log($"[FaseAtaque] Objetivo {target.name} destruido tras el ataque.");
+        }
     }
 
     void EndCurrentUnitTurn()

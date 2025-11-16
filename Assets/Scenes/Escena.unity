@@ -3043,7 +3043,7 @@ MonoBehaviour:
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
-          m_BoolArgument: 1
+          m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 124909811}
         m_TargetAssemblyTypeName: PlacementManager, Assembly-CSharp
@@ -3067,12 +3067,24 @@ MonoBehaviour:
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
-          m_BoolArgument: 1
+          m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 599224245}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
         m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 124909811}
+        m_TargetAssemblyTypeName: PlacementManager, Assembly-CSharp
+        m_MethodName: GoToAttackPhase
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -5400,11 +5412,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 832737591399901870, guid: 67f8efc1c846ffb4195097f78c47a142, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -4.4727254
+      value: -4.5
       objectReference: {fileID: 0}
     - target: {fileID: 832737591399901870, guid: 67f8efc1c846ffb4195097f78c47a142, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.6013636
+      value: -0.5
       objectReference: {fileID: 0}
     - target: {fileID: 832737591399901870, guid: 67f8efc1c846ffb4195097f78c47a142, type: 3}
       propertyPath: m_LocalPosition.z
@@ -9071,11 +9083,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 832737591399901870, guid: 67f8efc1c846ffb4195097f78c47a142, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -7.7857146
+      value: -7.5
       objectReference: {fileID: 0}
     - target: {fileID: 832737591399901870, guid: 67f8efc1c846ffb4195097f78c47a142, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.7970785
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 832737591399901870, guid: 67f8efc1c846ffb4195097f78c47a142, type: 3}
       propertyPath: m_LocalPosition.z
