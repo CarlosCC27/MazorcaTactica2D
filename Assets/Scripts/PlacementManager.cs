@@ -38,6 +38,7 @@ public class PlacementManager : MonoBehaviour
 
     [Header("Referencias de Otros Managers")]
     public FaseAccion faseAccionManager;
+    public FaseAtaque faseAtaqueManager;
 
     private GameObject previewObject;
     private GameObject selectedPrefab;
@@ -47,7 +48,7 @@ public class PlacementManager : MonoBehaviour
 
     private bool tropa;
     // Guardará qué celdas ya están ocupadas
-    private System.Collections.Generic.HashSet<Vector3Int> occupiedCells = 
+    private System.Collections.Generic.HashSet<Vector3Int> occupiedCells =
             new System.Collections.Generic.HashSet<Vector3Int>();
 
     void Start()
@@ -327,6 +328,32 @@ public class PlacementManager : MonoBehaviour
             occupiedCells.Remove(cell);
     }
 
+// Dentro de PlacementManager
+public void GoToAttackPhase()
+{
+    Debug.Log("PlacementManager: Entrando en Fase ATAQUE");
+
+    // 1) Asegurar que la colocación esté desactivada (pone fasePreparacion = false)
+    DesactivarColocacion();
+
+    // 2) Asegurarnos de que la fase de acción esté apagada y limpie sus highlights
+    if (faseAccionManager != null)
+    {
+        faseAccionManager.ClearHighlights();
+        faseAccionManager.enabled = false;
+    }
+
+    // 3) Iniciar la fase de ataque
+    if (faseAtaqueManager != null)
+    {
+        // activamos el componente y arrancamos su lógica
+        faseAtaqueManager.enabled = true;
+        faseAtaqueManager.StartPlayerAttackPhase();
+    }
+}
+
+// -----------------------------------------------------------------------------
+
     // ====================================================
     // 🔹 FUNCIÓN PÚBLICA PARA EL BOTÓN DE CAMBIO DE FASE
     // ====================================================
@@ -371,4 +398,5 @@ public class PlacementManager : MonoBehaviour
         }
         
     }
+    
 }
