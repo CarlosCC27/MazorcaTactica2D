@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Muro
   m_EditorClassIdentifier: Assembly-CSharp::TropaData
   nombreTropa: Muro
-  descripcion: Carlos mariquita
+  descripcion: Paulo Joputa Teixeira
   esEstructura: 1
   esEnemigo: 0
   vida: 10
