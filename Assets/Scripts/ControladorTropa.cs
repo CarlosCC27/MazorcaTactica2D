@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 
+
 // Asegura que este script siempre tenga el componente SpriteRenderer
 [RequireComponent(typeof(SpriteRenderer))]
 public class ControladorTropa : MonoBehaviour
@@ -29,6 +30,9 @@ public class ControladorTropa : MonoBehaviour
         // Aplicar la lógica de bando
         AplicarAjustesDeBando();
 
+        // Asegurar Tag correcto para que otros sistemas (FaseAccion/FaseAtaque) detecten
+        gameObject.tag = datosBase.esEnemigo ? "Enemy" : "Aliado";
+
         Debug.Log($"Tropa desplegada: {datosBase.nombreTropa}. Salud: {saludActual}. Enemigo: {datosBase.esEnemigo}");
     }
 
@@ -48,7 +52,48 @@ public class ControladorTropa : MonoBehaviour
 
         // 2. Ajuste lógico (Etiquetas/Layer para diferenciar bandos)
         // Esto es útil para la IA y el sistema de combate.
-        gameObject.layer = datosBase.esEnemigo ? LayerMask.NameToLayer("Enemigo") : LayerMask.NameToLayer("Aliado");
+        // Poner layer si existe (tener las layers creadas)
+        int layer = datosBase.esEnemigo ? LayerMask.NameToLayer("Enemy") : LayerMask.NameToLayer("Aliado");
+        if (layer != -1)
+            gameObject.layer = layer;
+        //gameObject.layer = datosBase.esEnemigo ? LayerMask.NameToLayer("Enemigo") : LayerMask.NameToLayer("Aliado");
+    }
+    // =========================
+    // Salud / combate
+    // =========================
+    public void TakeDamage(int cantidad)
+    {
+        saludActual -= cantidad;
+        Debug.Log($"{datosBase.nombreTropa} recibió {cantidad} daño. Salud restante: {saludActual}");
+
+        if (saludActual <= 0)
+        {
+            Die();
+        }
+    }
+
+    void Die()
+    {
+        // Avisar al PlacementManager para liberar la celda si corresponde
+        PlacementManager pm = FindObjectOfType<PlacementManager>();
+        if (pm != null && pm.tilemap != null)
+        {
+            Vector3Int cell = pm.tilemap.WorldToCell(transform.position);
+            pm.SetCellOccupied(cell, false);
+        }
+
+        // Aquí podrías reproducir animación de muerte, efectos, etc.
+        Destroy(gameObject);
+    }
+
+    public bool IsAlive()
+    {
+        return saludActual > 0;
+    }
+    //getter
+    public int GetSaludActual()
+    {
+        return saludActual;
     }
 
     // Método de ejemplo para ser usado por la IA o el Jugador

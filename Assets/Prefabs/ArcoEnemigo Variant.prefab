@@ -16,6 +16,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: ArcoEnemigo Variant
       objectReference: {fileID: 0}
+    - target: {fileID: 835016270662335228, guid: 5129d00ba2b6e3f4fbab57f015bb4bbe, type: 3}
+      propertyPath: m_TagString
+      value: Enemy
+      objectReference: {fileID: 0}
     - target: {fileID: 5964430701670140881, guid: 5129d00ba2b6e3f4fbab57f015bb4bbe, type: 3}
       propertyPath: m_LocalPosition.x
       value: -7.7857146
