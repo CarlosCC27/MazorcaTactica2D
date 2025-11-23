@@ -38,10 +38,21 @@ public class FaseAtaque : MonoBehaviour
         foreach (var a in allies)
         {
             var ctrl = a.GetComponent<ControladorTropa>();
+
             if (ctrl != null && ctrl.IsAlive())
             {
-                // Si tiene rangoAtaque > 0 añadimos a la lista; si quieres que unidades sin ataque también pasen, quítalo
-                playerUnitsToAct.Add(a);
+                if (ctrl.datosBase != null && ctrl.datosBase.esEstructura)
+                {
+                    Debug.Log($"Estructura {a.name} omitida en la fase de ataque.");
+                    continue; // Saltar esta iteración (no agregar a la lista)
+                }
+
+                // 3. (Opcional, pero bueno) Si tiene rangoAtaque > 0 añadimos a la lista; 
+                // Esto asegura que solo las unidades con capacidad ofensiva entren en la cola.
+                if (ctrl.datosBase.rangoAtaque > 0)
+                {
+                    playerUnitsToAct.Add(a);
+                }
             }
         }
 

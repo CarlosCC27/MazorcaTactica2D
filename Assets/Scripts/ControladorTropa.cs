@@ -9,6 +9,9 @@ public class ControladorTropa : MonoBehaviour
     [Header("Datos de la Tropa")]
     public TropaData datosBase;
 
+    [Header("Estado de turno")]
+    public bool hasMoved = false; // true si ya se movió esta ronda
+
     // Variables de estado (pueden cambiar durante la partida)
     private int saludActual;
 
@@ -35,6 +38,35 @@ public class ControladorTropa : MonoBehaviour
 
         Debug.Log($"Tropa desplegada: {datosBase.nombreTropa}. Salud: {saludActual}. Enemigo: {datosBase.esEnemigo}");
     }
+
+    // =========================================
+    // Ajustar limite 1 movimiento por tropa con cambio de color
+    // =========================================
+
+    public void MarkMoved()
+    {
+        hasMoved = true;
+        ApplyMovedVisual(true);
+    }
+
+    public void ResetMovedFlag()
+    {
+        hasMoved = false;
+        ApplyMovedVisual(false);
+    }
+
+    public bool CanMoveThisTurn()
+    {
+        return !hasMoved;
+    }
+
+    public void ApplyMovedVisual(bool moved)
+    {
+        if (spriteRenderer == null) return;
+        // ejemplo simple: atenuar sprite si ya se movió
+        spriteRenderer.color = moved ? new Color(1f, 1f, 1f, 0.6f) : new Color(1f, 1f, 1f, 1f);
+    }
+
 
     // =========================================
     // 🔹 Ajuste visual y lógico según el bando

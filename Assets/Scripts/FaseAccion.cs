@@ -50,6 +50,15 @@ public class FaseAccion : MonoBehaviour
 
             if (clickedObject.CompareTag("Aliado"))
             {
+                // Si la tropa ya se movió este turno, no permitir seleccionarla/moverla
+                var ctrlCheck = clickedObject.GetComponent<ControladorTropa>();
+                if (ctrlCheck != null && !ctrlCheck.CanMoveThisTurn())
+                {
+                    Debug.Log("Esta tropa ya se ha movido en esta ronda. No se puede seleccionar para mover.");
+                    // opcional: feedback visual/sonido aquí
+                    return;
+                }
+
                 Vector3Int cellPos = placementManager.tilemap.WorldToCell(clickedObject.transform.position);
 
                 int rango = 1;
@@ -311,6 +320,13 @@ public class FaseAccion : MonoBehaviour
                 if (prev != nextCell) // seguridad
                     placementManager.SetCellOccupied(prev, false);
             }
+        }
+
+        // MARCAR LA UNIDAD COMO "YA SE MOVIÓ" al completar el movimiento
+        var ctrl = unit.GetComponent<ControladorTropa>();
+        if (ctrl != null)
+        {
+            ctrl.MarkMoved();
         }
 
         // Movimiento completado: limpiar visualización de ruta y resaltar

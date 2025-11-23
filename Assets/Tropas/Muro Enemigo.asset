@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Muro Enemigo
   m_EditorClassIdentifier: Assembly-CSharp::TropaData
   nombreTropa: Muro
-  descripcion: Carlos mariquita
+  descripcion: 
   esEstructura: 1
   esEnemigo: 1
   vida: 10

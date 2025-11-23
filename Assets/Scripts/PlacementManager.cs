@@ -346,13 +346,32 @@ public void GoToAttackPhase()
     // 3) Iniciar la fase de ataque
     if (faseAtaqueManager != null)
     {
+        RestoreOpacityOfAllUnits();
+
         // activamos el componente y arrancamos su lógica
         faseAtaqueManager.enabled = true;
         faseAtaqueManager.StartPlayerAttackPhase();
     }
 }
 
+public void RestoreOpacityOfAllUnits()
+{
+    var allies = GameObject.FindGameObjectsWithTag("Aliado");
+    foreach (var a in allies)
+    {
+        var ctrl = a.GetComponent<ControladorTropa>();
+        if (ctrl != null)
+        {
+            ctrl.ApplyMovedVisual(false); // restaura opacidad al 100%
+        }
+    }
+
+    Debug.Log("PlacementManager: Opacidad restaurada para todas las unidades.");
+}
+
+
 // -----------------------------------------------------------------------------
+
 
     // ====================================================
     // 🔹 FUNCIÓN PÚBLICA PARA EL BOTÓN DE CAMBIO DE FASE
@@ -372,6 +391,9 @@ public void GoToAttackPhase()
                 faseAccionManager.enabled = true; // Activa el Update de FaseAccion
                 Debug.Log("🚀 Fase cambiada a ACCIÓN. Colocación desactivada.");
             }
+
+            // Reiniciar flags de movimiento para todas las unidades aliadas al iniciar la fase de acción
+            ResetAllUnitsMovementFlags();
         }
         
         else
@@ -389,7 +411,7 @@ public void GoToAttackPhase()
             // Rehabilita la fase de preparación
             fasePreparacion = true;
 
-            Debug.Log("🏠 Fase cambiada a PREPARACIÓN. Colocación activa.");
+            Debug.Log("Fase cambiada a PREPARACIÓN. Colocación activa.");
 
             // Si necesitas que los botones de UI de selección de tropa se muestren,
             // la responsabilidad recae en el sistema que los gestiona, NO en PlacementManager.
@@ -397,6 +419,19 @@ public void GoToAttackPhase()
             // a través de su propia configuración 'OnClick' en el Inspector, además de llamar a TogglePhase().
         }
         
+    }
+
+    // Reinicia las banderas de movimiento de todas las unidades aliadas
+    public void ResetAllUnitsMovementFlags()
+    {
+        var allies = GameObject.FindGameObjectsWithTag("Aliado");
+        foreach (var a in allies)
+        {
+            var ctrl = a.GetComponent<ControladorTropa>();
+            if (ctrl != null)
+                ctrl.ResetMovedFlag();
+        }
+        Debug.Log("PlacementManager: ResetAllUnitsMovementFlags ejecutado.");
     }
     
 }
