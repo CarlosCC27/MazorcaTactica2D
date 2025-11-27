@@ -1,7 +1,9 @@
+using System.Collections.Generic;
 using Mono.Cecil.Cil;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
+
 
 public class PlacementManager : MonoBehaviour
 {
@@ -433,5 +435,69 @@ public void RestoreOpacityOfAllUnits()
         }
         Debug.Log("PlacementManager: ResetAllUnitsMovementFlags ejecutado.");
     }
-    
+
+
+    // -------------------------------------------------------------
+    // NUEVO: PROGRAMACIÓN IA
+    // -------------------------------------------------------------
+        // Devuelve todas las celdas válidas del tilemap (iteración simple)
+    public IEnumerable<Vector3Int> GetAllValidTiles()
+    {
+        if (tilemap == null) yield break;
+
+        // Recorremos el bounds del tilemap para obtener tiles existentes
+        var bounds = tilemap.cellBounds;
+        for (int x = bounds.xMin; x < bounds.xMax; x++)
+        {
+            for (int y = bounds.yMin; y < bounds.yMax; y++)
+            {
+                Vector3Int p = new Vector3Int(x, y, 0);
+                if (tilemap.HasTile(p))
+                    yield return p;
+            }
+        }
+    }
+
+    // Coloca una estructura en una celda dada usando un prefab (devuelve el GameObject instanciado o null)
+    public GameObject PlaceStructureAtCell(Vector3Int cell, GameObject prefab)
+    {
+        if (tilemap == null || prefab == null) return null;
+        if (!tilemap.HasTile(cell) || IsCellOccupied(cell)) return null;
+
+        Vector3 center = tilemap.GetCellCenterWorld(cell);
+        GameObject placed = Instantiate(prefab, center, Quaternion.identity);
+        SetCellOccupied(cell, true);
+        // restaurar opacidad si necesitas
+        SetPreviewTransparency(placed, 1f);
+        return placed;
+    }
+
+    // Método para ser llamado por AIManager cuando el turno IA termina: reactivar fase de preparación/ UI
+    public void OnAIEndTurn()
+    {
+        // Esto depende de tu flujo de UI. Aquí dejamos la fasePreparacion activa y limpiamos highlights.
+        Debug.Log("PlacementManager: OnAIEndTurn llamado. Reactivando fase de preparación del jugador.");
+
+        // Restaurar opacidad de todas las unidades aliadas (ya se hace en AIManager, repetimos por seguridad)
+        RestoreOpacityOfAllUnits();
+
+        // Poner el juego en fase de preparación para el jugador
+        fasePreparacion = true;
+
+        // Si tenías un manager de botones para ocultar mostrar, reactívalo aquí (opcional)
+        // Si tenías que reactivar FaseAccion, NO lo hagas: el jugador empezará en PREPARACIÓN.
+
+        // Asegúrate de que cualquier highlight de fases previas esté limpio
+        if (faseAccionManager != null)
+        {
+            faseAccionManager.ClearHighlights();
+            faseAccionManager.enabled = false;
+        }
+        if (faseAtaqueManager != null)
+        {
+            faseAtaqueManager.ClearAllHighlights();
+            faseAtaqueManager.enabled = false;
+        }
+    }
+
 }

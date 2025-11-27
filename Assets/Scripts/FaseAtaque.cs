@@ -258,7 +258,7 @@ public class FaseAtaque : MonoBehaviour
         enemyHighlights.Clear();
     }
 
-    void ClearAllHighlights()
+    public void ClearAllHighlights()
     {
         ClearRangeHighlights();
     }
@@ -333,6 +333,24 @@ public class FaseAtaque : MonoBehaviour
         Debug.Log("-> Aquí deberías invocar la IA para que haga sus movimientos y ataques.");
 
         // Si más adelante necesitas reactivar FaseAccion (movimiento del jugador) tras IA, hazlo desde el manager de fases.
+
+        // Iniciar IA (asegura que exista un AIManager en la escena)
+        var ai = FindObjectOfType<AIManager>();
+        if (ai != null)
+        {
+            ai.StartAITurn();
+        }
+        else
+        {
+            Debug.LogWarning("AIManager no encontrado. Saltando turno IA.");
+        }
+    }
+
+    // Wrapper público para que la IA invoque el ataque usando vuestra lógica existente
+    public void PerformAttackForAI(GameObject attacker, GameObject target)
+    {
+        // Reutilizamos lógica privada PerformAttack
+        PerformAttack(attacker, target);
     }
 
     void OnDisable()
