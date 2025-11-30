@@ -4,14 +4,18 @@ using UnityEngine;
 public class TropaData : ScriptableObject
 {
     
-    [Header("Identificación")]
+    [Header("Identificaciï¿½n")]
     public string nombreTropa = "Soldado Generico";
-    public string descripcion = "Unidad básica.";
+    public string descripcion = "Unidad bï¿½sica.";
 
 
     [Header("Tipo")]
     [Tooltip("Marcar si es una estructura, si es un humano dejar desmarcado")]
     public bool esEstructura = false;
+
+    [Header("EsBase")]
+    [Tooltip("Marcar si es una base, si no dejar desmarcado")]
+    public bool esBase = false;
     
 
     [Header("Bando")]
@@ -19,16 +23,16 @@ public class TropaData : ScriptableObject
     public bool esEnemigo = false;
 
     
-    [Header("Estadísticas Base")]
+    [Header("Estadï¿½sticas Base")]
     public int vida = 10;
     public int ataque = 3;
     public int defensa = 2;
 
     
-    [Header("Variables Tácticas / IA")]
-    [Tooltip("Cuántas casillas puede mover la unidad por turno.")]
+    [Header("Variables Tï¿½cticas / IA")]
+    [Tooltip("Cuï¿½ntas casillas puede mover la unidad por turno.")]
     public int rangoMovimiento = 3;
-    [Tooltip("Distancia máxima de ataque (en casillas).")]
+    [Tooltip("Distancia mï¿½xima de ataque (en casillas).")]
     public int rangoAtaque = 1;
 
 
@@ -38,6 +42,6 @@ public class TropaData : ScriptableObject
 
     
     [Header("Recursos Visuales")]
-    [Tooltip("El Sprite o Prefab que se usará para representar la unidad.")]
+    [Tooltip("El Sprite o Prefab que se usarï¿½ para representar la unidad.")]
     public GameObject prefabUnidad;
 }

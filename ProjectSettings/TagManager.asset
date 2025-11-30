@@ -7,6 +7,7 @@ TagManager:
   - Enemy
   - Aliado
   - Estructura
+  - Base
   layers:
   - Default
   - TransparentFX

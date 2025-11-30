@@ -11,7 +11,7 @@ public class InfluenceMap : MonoBehaviour
     private Dictionary<Vector3Int, float> playerInfluence = new Dictionary<Vector3Int, float>();
 
     [Header("Parámetros de propagación")]
-    public int maxRadius = 4;
+    public int maxRadius = 6;
     [Range(0.1f, 0.99f)]
     public float decay = 0.6f; // factor por casilla de distancia
 
@@ -63,8 +63,21 @@ public class InfluenceMap : MonoBehaviour
     {
         var data = ctrl.datosBase;
         if (data == null) return 1f;
-        // Ajusta pesos según lo que te interese: vida, ataque y defensa importan
-        return data.vida * 0.6f + data.ataque * 1.0f + data.defensa * 0.8f + (data.esEstructura ? 10f : 0f);
+        // 1 — Si es una Base, influencia masiva
+        if (data.esBase)
+            return 120f; // o 200f si quieres que realmente domine el mapa
+
+        // 2 — Si es una estructura normal, NO queremos que influya
+        if (data.esEstructura)
+            return 0f;
+
+        // 3 — Tropas normales: mezcla de stats
+        float value = 0f;
+        value += data.vida * 0.6f;
+        value += data.ataque * 1.0f;
+        value += data.defensa * 0.8f;
+
+        return Mathf.Max(1f, value);
     }
 
     void PropagateInfluence(Vector3Int origin, float baseValue, Dictionary<Vector3Int, float> map)

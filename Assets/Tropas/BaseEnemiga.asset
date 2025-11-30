@@ -10,18 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9af3505a2eded3b4cb9075877c06679c, type: 3}
-  m_Name: Guerrero
+  m_Name: BaseEnemiga
   m_EditorClassIdentifier: Assembly-CSharp::TropaData
-  nombreTropa: Guerrero
-  descripcion: Te mete un guantazo de cerca que te deja tonto.
+  nombreTropa: BaseEnemiga
+  descripcion: 
   esEstructura: 0
-  esBase: 0
-  esEnemigo: 0
-  vida: 5
-  ataque: 2
-  defensa: 5
-  rangoMovimiento: 3
-  rangoAtaque: 1
-  costeOro: 5
-  costeMadera: 0
-  prefabUnidad: {fileID: 6024261810931218555, guid: db7cc2f714347ab46a0bccefdf9241bc, type: 3}
+  esBase: 1
+  esEnemigo: 1
+  vida: 20
+  ataque: 0
+  defensa: 2
+  rangoMovimiento: 0
+  rangoAtaque: 0
+  costeOro: 0
+  costeMadera: 10
+  prefabUnidad: {fileID: 1787615214400669952, guid: b95104c94f1fc1443969ce2d24a64495, type: 3}
