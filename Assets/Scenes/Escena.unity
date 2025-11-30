@@ -199,6 +199,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlacementManager
   fasePreparacion: 1
   tilemap: {fileID: 375841844}
+  useEdgeBasedPlacement: 1
+  placementColumns: 8
+  playerPlacementXMin: 0
+  playerPlacementXMax: 100
+  enemyPlacementXMin: 0
+  enemyPlacementXMax: 100
   jugadorManager: {fileID: 1590257514}
   faseAccionManager: {fileID: 769656258}
   faseAtaqueManager: {fileID: 1183659619}

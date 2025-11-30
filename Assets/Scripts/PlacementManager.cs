@@ -19,6 +19,21 @@ public class PlacementManager : MonoBehaviour
     [Header("Referencias del Tilemap")]
     public Tilemap tilemap;
 
+    [Header("Restricción de colocación por zona (Preparación)")]
+    [Tooltip("Si está activado se usarán 'placementColumns' desde los bordes (izquierda=enemigo, derecha=jugador).")]
+    public bool useEdgeBasedPlacement = true;
+
+    [Tooltip("Número de columnas desde el borde que están permitidas para colocar.")]
+    public int placementColumns = 6;
+
+    [Space(6)]
+    [Tooltip("Si 'useEdgeBasedPlacement' está desactivado, usa estos rangos X (inclusive) en coordenadas de celda.")]
+    public int playerPlacementXMin = 0;
+    public int playerPlacementXMax = 100;
+
+    public int enemyPlacementXMin = 0;
+    public int enemyPlacementXMax = 100;
+
     /*
     [Header("Prefabs o personajes")]
     public GameObject estructura;
@@ -117,7 +132,13 @@ public class PlacementManager : MonoBehaviour
         // Verificar que existe un tile en esa celda
         if (!tilemap.HasTile(targetCell))
         {
-            Debug.LogWarning("❌ La celda [0,0] no tiene un tile, no se puede colocar el enemigo.");
+            Debug.LogWarning("La celda [0,0] no tiene un tile, no se puede colocar el enemigo.");
+            return;
+        }
+           // Comprobar zona la IA/enemigo (false)
+        if (!IsCellInPlacementZone(targetCell, false))
+        {
+            Debug.LogWarning("La celda objetivo para enemigoPrueba está fuera de la zona de colocación del enemigo.");
             return;
         }
 
@@ -183,10 +204,11 @@ public class PlacementManager : MonoBehaviour
         // Mover el objeto preview
         previewObject.transform.position = cellCenter;
 
-        // Cambiar color del preview si la celda no es válida
-        if (!tilemap.HasTile(cellPos) || occupiedCells.Contains(cellPos))
+                // Cambiar color del preview si la celda no es válida
+        bool inZone = IsCellInPlacementZone(cellPos, /*forPlayer=*/ !selectedTropaData.esEnemigo); // true si esta colocando jugador
+        if (!tilemap.HasTile(cellPos) || occupiedCells.Contains(cellPos) || !inZone)
         {
-            // 🔴 Rojo semitransparente si no se puede colocar
+            // 🔴 Rojo semitransparente si no se puede colocar o fuera de zona
             SetPreviewColor(previewObject, new Color(1f, 0.3f, 0.3f, 0.5f));
         }
         else
@@ -205,6 +227,12 @@ public class PlacementManager : MonoBehaviour
         mouseWorld.z = 0;
 
         Vector3Int cellPos = tilemap.WorldToCell(mouseWorld);
+         bool forPlayerPlacement = !selectedTropaData.esEnemigo; // true = jugador
+        if (!IsCellInPlacementZone(cellPos, forPlayerPlacement))
+        {
+            Debug.Log("No se puede colocar aquí: fuera de la zona permitida.");
+            return;
+        }
 
         // ❌ Si no hay tile o la celda está ocupada, salir
         if (!tilemap.HasTile(cellPos) || occupiedCells.Contains(cellPos))
@@ -497,6 +525,35 @@ public void RestoreOpacityOfAllUnits()
         {
             faseAtaqueManager.ClearAllHighlights();
             faseAtaqueManager.enabled = false;
+        }
+    }
+
+        // Comprueba si una celda está en la zona válida de colocación.
+    // forPlayer = true -> zona del jugador; false -> zona del enemigo.
+    public bool IsCellInPlacementZone(Vector3Int cell, bool forPlayer)
+    {
+        if (tilemap == null) return false;
+
+        var bounds = tilemap.cellBounds;
+
+        if (useEdgeBasedPlacement)
+        {
+            // En este modo: enemy = las 'placementColumns' primeras columnas (lado izquierdo),
+            // player = las 'placementColumns' últimas columnas (lado derecho).
+            int enemyMaxX = bounds.xMin + placementColumns;      // exclusive bound de la "sexta columna" desde la izquierda
+            int playerMinX = bounds.xMax - placementColumns;     // inclusive límite desde la derecha
+
+            if (forPlayer)
+                return cell.x >= playerMinX && cell.x < bounds.xMax;
+            else
+                return cell.x >= bounds.xMin && cell.x < enemyMaxX;
+        }
+        else
+        {
+            if (forPlayer)
+                return cell.x >= playerPlacementXMin && cell.x <= playerPlacementXMax;
+            else
+                return cell.x >= enemyPlacementXMin && cell.x <= enemyPlacementXMax;
         }
     }
 
