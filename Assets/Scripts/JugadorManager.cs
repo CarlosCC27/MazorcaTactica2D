@@ -11,6 +11,8 @@ public class JugadorManager : MonoBehaviour
     public TMP_Text textoOro;
     public TMP_Text textoMadera;
 
+    public GameObject panelJugador;
+
     void Start()
     {
         ActualizarUI();
@@ -103,4 +105,16 @@ public class JugadorManager : MonoBehaviour
             yield return new WaitForSeconds(0.2f);
         }
     }
+
+    public void ActivarUIJugador()
+    {
+        Debug.Log("🔵 ACTIVANDO UI DEL JUGADOR");
+
+        foreach (Transform child in panelJugador.transform)
+            child.gameObject.SetActive(true);
+
+        panelJugador.SetActive(true);
+    }
+
+
 }

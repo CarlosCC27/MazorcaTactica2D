@@ -503,32 +503,40 @@ public void RestoreOpacityOfAllUnits()
     // Método para ser llamado por AIManager cuando el turno IA termina: reactivar fase de preparación/ UI
     public void OnAIEndTurn()
     {
-        // Esto depende de tu flujo de UI. Aquí dejamos la fasePreparacion activa y limpiamos highlights.
-        Debug.Log("PlacementManager: OnAIEndTurn llamado. Reactivando fase de preparación del jugador.");
+        Debug.Log("PlacementManager: Turno IA FINALIZADO → empieza turno del JUGADOR");
 
-        // Restaurar opacidad de todas las unidades aliadas (ya se hace en AIManager, repetimos por seguridad)
+        // 1) Resetear estado visual y banderas
         RestoreOpacityOfAllUnits();
+        ResetAllUnitsMovementFlags();
 
-        // Poner el juego en fase de preparación para el jugador
+        // 2) Reactivar fase PREPARACIÓN
         fasePreparacion = true;
 
-        // Si tenías un manager de botones para ocultar mostrar, reactívalo aquí (opcional)
-        // Si tenías que reactivar FaseAccion, NO lo hagas: el jugador empezará en PREPARACIÓN.
-
-        // Asegúrate de que cualquier highlight de fases previas esté limpio
+        // 3) Desactivar fases anteriores (IA ataque/movimiento)
         if (faseAccionManager != null)
         {
             faseAccionManager.ClearHighlights();
             faseAccionManager.enabled = false;
         }
+
         if (faseAtaqueManager != null)
         {
             faseAtaqueManager.ClearAllHighlights();
             faseAtaqueManager.enabled = false;
         }
+
+        // 4) Mostrar UI del jugador (si la tienes)
+        if (jugadorManager != null)
+            jugadorManager.ActivarUIJugador();    // <-- crea esto si no existe
+
+        // 5) PREPARAR EL TURNO DEL JUGADOR
+        // Aquí decides cómo empieza su turno: preparación, acción o ataque.
+        // Por cómo funciona tu juego: empieza en PREPARACIÓN.
+        Debug.Log("⏳ Nuevo turno del jugador: FASE DE PREPARACIÓN ACTIVADA");
     }
 
-        // Comprueba si una celda está en la zona válida de colocación.
+
+    // Comprueba si una celda está en la zona válida de colocación.
     // forPlayer = true -> zona del jugador; false -> zona del enemigo.
     public bool IsCellInPlacementZone(Vector3Int cell, bool forPlayer)
     {

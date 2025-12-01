@@ -15,6 +15,8 @@ public class ControladorTropa : MonoBehaviour
     // Variables de estado (pueden cambiar durante la partida)
     private int saludActual;
 
+    public TacticalOrder currentOrder;
+
     private SpriteRenderer spriteRenderer;
 
     void Awake()
@@ -135,4 +137,10 @@ public class ControladorTropa : MonoBehaviour
     }
 
     // Puedes añadir más lógica como TomarDano(int cantidad), Atacar(Unit objetivo), etc.
+
+    public void ReceiveTacticalOrder(TacticalOrder order)
+    {
+        currentOrder = order;
+        Debug.Log($"[{name}] recibió orden: {order.tipo}");
+    }
 }
