@@ -15,9 +15,10 @@ MonoBehaviour:
   nombreTropa: Arquero
   descripcion: Dispara flechitas.
   esEstructura: 0
+  esBase: 0
   esEnemigo: 1
   vida: 3
-  ataque: 5
+  ataque: 10
   defensa: 2
   rangoMovimiento: 2
   rangoAtaque: 5
