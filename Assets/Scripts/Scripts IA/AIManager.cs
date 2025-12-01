@@ -93,25 +93,21 @@ public class AIManager : MonoBehaviour
 
     IEnumerator MovementPhase(List<GameObject> aiUnits)
     {
-        // Placeholder: por ahora simplemente marcar que se mueven (no hacemos rutas complejas aún)
         foreach (var u in aiUnits)
         {
             if (u == null) continue;
             var ctrl = u.GetComponent<ControladorTropa>();
-            if (ctrl == null) continue;
-            if (!ctrl.CanMoveThisTurn()) continue;
+            if (ctrl == null || !ctrl.CanMoveThisTurn()) continue;
 
-            // Log: la unidad evaluará su acción local (más adelante aquí llamará TacticalUnitAI)
-            Debug.Log($"[AIManager] Preparando movimiento para {u.name} (rango {ctrl.GetRangoMovimiento()})");
+            TacticalOrder order = GetOrderForUnit(u);
 
-            // Ejemplo simple: no mover (mantener posición) -> luego podrás pedir ruta real
-            // ctrl.MarkMoved(); // NO marcamos aquí si no movemos
+            // Enviar orden a unidad
+            ctrl.ReceiveTacticalOrder(order);
 
             yield return new WaitForSeconds(0.05f);
         }
-
-        yield break;
     }
+
 
     IEnumerator AttackPhase(List<GameObject> aiUnits)
     {
@@ -178,4 +174,42 @@ public class AIManager : MonoBehaviour
             placementManager.OnAIEndTurn();
         }
     }
+
+    public TacticalOrder GetOrderForUnit(GameObject unit)
+    {
+        var ctrl = unit.GetComponent<ControladorTropa>();
+        if (ctrl == null) return new TacticalOrder(TacticalOrderType.Mantener);
+
+        Vector3Int cell = tilemap.WorldToCell(unit.transform.position);
+
+        // 1) leer influencia en la casilla
+        float net = influenceMap.GetNetInfluence(cell);
+
+        switch (currentStrategy)
+        {
+            case AIStrategy.Agresiva:
+                // si el mapa favorece IA -> avanzar
+                if (net > 0) return new TacticalOrder(TacticalOrderType.Avanzar);
+                else return new TacticalOrder(TacticalOrderType.MoverHaciaZona, GetNearestWeakPlayerZone());
+
+            case AIStrategy.Defensiva:
+                // si estamos en mala zona -> retroceder
+                if (net < -5) return new TacticalOrder(TacticalOrderType.Retroceder);
+                else return new TacticalOrder(TacticalOrderType.Mantener);
+
+            case AIStrategy.Equilibrada:
+            default:
+                if (net > 3) return new TacticalOrder(TacticalOrderType.Avanzar);
+                if (net < -3) return new TacticalOrder(TacticalOrderType.Retroceder);
+                return new TacticalOrder(TacticalOrderType.Mantener);
+        }
+    }
+
+    Vector3Int GetNearestWeakPlayerZone()
+    {
+        // placeholder: devuelve aleatoria cercana
+        return tilemap.WorldToCell(transform.position) + new Vector3Int(1, 0, 0);
+    }
+
+
 }
