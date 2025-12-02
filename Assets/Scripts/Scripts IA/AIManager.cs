@@ -21,6 +21,9 @@ public class AIManager : MonoBehaviour
 
     public AIStrategy currentStrategy = AIStrategy.Equilibrada;
 
+    public bool isAITurn = false;
+
+
     void Awake()
     {
         if (Instance == null) Instance = this;
@@ -38,6 +41,7 @@ public class AIManager : MonoBehaviour
 
     IEnumerator RunAITurn()
     {
+        isAITurn = true;
         Debug.Log("[AIManager] Inicio turno IA");
 
         // 1) Recolectar estado del mundo
@@ -67,6 +71,7 @@ public class AIManager : MonoBehaviour
         // 6) Fase Ataque (placeholder)
         yield return StartCoroutine(AttackPhase(aiUnits));
 
+        isAITurn= false;
         // 7) Fin de turno IA: restaurar cosas y devolver turno al jugador
         OnEndTurn();
 
@@ -100,13 +105,13 @@ public class AIManager : MonoBehaviour
             if (ctrl == null || !ctrl.CanMoveThisTurn()) continue;
 
             TacticalOrder order = GetOrderForUnit(u);
-
-            // Enviar orden a unidad
             ctrl.ReceiveTacticalOrder(order);
 
             yield return new WaitForSeconds(0.05f);
         }
     }
+
+
 
 
     IEnumerator AttackPhase(List<GameObject> aiUnits)
@@ -166,6 +171,7 @@ public class AIManager : MonoBehaviour
         {
             placementManager.RestoreOpacityOfAllUnits();
             placementManager.ResetAllUnitsMovementFlags();
+            placementManager.ResetAllEnemyUnitsMovementFlags();
         }
 
         // Notificar al PlacementManager que el turno IA terminó (para reactivar fasePreparacion y UI)

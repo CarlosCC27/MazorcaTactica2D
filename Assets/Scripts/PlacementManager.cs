@@ -464,11 +464,23 @@ public void RestoreOpacityOfAllUnits()
         Debug.Log("PlacementManager: ResetAllUnitsMovementFlags ejecutado.");
     }
 
+    public void ResetAllEnemyUnitsMovementFlags()
+    {
+        var enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        foreach (var a in enemies)
+        {
+            var ctrl = a.GetComponent<ControladorTropa>();
+            if (ctrl != null)
+                ctrl.ResetMovedFlag();
+        }
+        Debug.Log("PlacementManager: ResetAllUnitsMovementFlags ejecutado.");
+    }
+
 
     // -------------------------------------------------------------
     // NUEVO: PROGRAMACIÓN IA
     // -------------------------------------------------------------
-        // Devuelve todas las celdas válidas del tilemap (iteración simple)
+    // Devuelve todas las celdas válidas del tilemap (iteración simple)
     public IEnumerable<Vector3Int> GetAllValidTiles()
     {
         if (tilemap == null) yield break;
@@ -564,5 +576,21 @@ public void RestoreOpacityOfAllUnits()
                 return cell.x >= enemyPlacementXMin && cell.x <= enemyPlacementXMax;
         }
     }
+
+    // En PlacementManager.cs
+    public Vector3Int GetBaseCell(bool buscarAliada)
+    {
+        BaseMarker[] bases = FindObjectsOfType<BaseMarker>();
+        foreach (var b in bases)
+        {
+            // Si tu SO o BaseMarker tiene la info de esEnemigo
+            if (b.GetComponent<ControladorTropa>().datosBase.esEnemigo != buscarAliada)
+            {
+                return tilemap.WorldToCell(b.transform.position);
+            }
+        }
+        return Vector3Int.zero;
+    }
+
 
 }
