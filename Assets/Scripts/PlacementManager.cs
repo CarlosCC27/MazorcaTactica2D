@@ -78,6 +78,18 @@ public class PlacementManager : MonoBehaviour
         //botonE.onClick.AddListener(() => SelectCharacter(estructura));
 
         //PosicionarEnemigoPrueba(enemigoPrueba);
+
+        // Marcar celda de la base como ocupada para impedir spawns encima (si existe BaseMarker)
+        var baseCellEnemy = GetBaseCell(buscarAliada: false);
+        if (tilemap != null && tilemap.HasTile(baseCellEnemy))
+        {
+            SetCellOccupied(baseCellEnemy, true);
+        }
+        var baseCellAlly = GetBaseCell(buscarAliada: true);
+        if (tilemap != null && tilemap.HasTile(baseCellAlly))
+        {
+            SetCellOccupied(baseCellAlly, true);
+        }
     }
 
     void Update()
@@ -352,10 +364,8 @@ public class PlacementManager : MonoBehaviour
     // Permite marcar o desmarcar una celda como ocupada
     public void SetCellOccupied(Vector3Int cell, bool occupied)
     {
-        if (occupied)
-            occupiedCells.Add(cell);
-        else
-            occupiedCells.Remove(cell);
+        if (occupied) occupiedCells.Add(cell);
+        else occupiedCells.Remove(cell);
     }
 
 // Dentro de PlacementManager

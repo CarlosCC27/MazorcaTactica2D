@@ -20,11 +20,6 @@ public class FaseAtaque : MonoBehaviour
 
     private GameObject currentUnit;
 
-    void OnEnable()
-    {
-        StartPlayerAttackPhase();
-    }
-
     // Llamar para iniciar la fase de ataque del jugador
     public void StartPlayerAttackPhase()
     {
@@ -328,9 +323,6 @@ public class FaseAtaque : MonoBehaviour
     void OnPlayerAttackPhaseComplete()
     {
         ClearAllHighlights();
-
-        // Aquí lanzar la IA: por ejemplo
-        Debug.Log("-> Aquí deberías invocar la IA para que haga sus movimientos y ataques.");
 
         // Si más adelante necesitas reactivar FaseAccion (movimiento del jugador) tras IA, hazlo desde el manager de fases.
 
