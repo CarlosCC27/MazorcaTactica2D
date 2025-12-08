@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.Tilemaps;
+using System.Collections;
 
 [RequireComponent(typeof(SpriteRenderer))]
 public class ControladorTropa : MonoBehaviour
@@ -17,9 +18,24 @@ public class ControladorTropa : MonoBehaviour
     public TacticalOrder currentOrder;
     private SpriteRenderer spriteRenderer;
 
+    private Transform visualTransform;            // Transform del child visual (si existe)
+private SpriteRenderer visualSpriteRenderer;  // SpriteRenderer sobre el child (si existe)
+private Coroutine hitCoroutine = null;        // control de coroutine de hit
+
     void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
+        var v = transform.Find("Visual");
+        if (v != null)
+        {
+            visualTransform = v;
+            visualSpriteRenderer = v.GetComponent<SpriteRenderer>();
+        }
+        else
+        {
+            visualTransform = null;
+            visualSpriteRenderer = null;
+        }
 
         jugadorManager = FindObjectOfType<JugadorManager>();
 
@@ -77,6 +93,8 @@ public class ControladorTropa : MonoBehaviour
     public void TakeDamage(int cantidad)
     {
         saludActual -= cantidad;
+        // Iniciar vibración + flash al recibir daño
+        PlayHitVibration();
         if (saludActual <= 0) Die();
     }
 
@@ -198,4 +216,99 @@ public class ControladorTropa : MonoBehaviour
         pm.SetCellOccupied(cell, true);
     }
     #endregion
+
+
+    public void PlayHitVibration(float duration = 0.25f, float magnitude = 0.12f, float flashDuration = 0.12f)
+{
+    // Si ya hay coroutine de hit, reiniciarla
+    if (hitCoroutine != null)
+    {
+        StopCoroutine(hitCoroutine);
+        RestoreVisualTransform();
+        hitCoroutine = null;
+    }
+
+    hitCoroutine = StartCoroutine(HitVibrationCoroutine(duration, magnitude, flashDuration));
+}
+
+private IEnumerator HitVibrationCoroutine(float duration, float magnitude, float flashDuration)
+{
+    bool useVisualChild = (visualTransform != null);
+    Vector3 originalWorldPos = transform.position;
+    Vector3 originalLocalPos = Vector3.zero;
+    SpriteRenderer targetSprite = spriteRenderer;
+
+    if (useVisualChild)
+    {
+        originalLocalPos = visualTransform.localPosition;
+        if (visualSpriteRenderer != null) targetSprite = visualSpriteRenderer;
+    }
+
+    Color originalColor = targetSprite != null ? targetSprite.color : Color.white;
+
+    // Iniciar flash de color en paralelo
+    StartCoroutine(FlashColorCoroutine(Color.red, flashDuration, targetSprite));
+
+    float elapsed = 0f;
+    while (elapsed < duration)
+    {
+        elapsed += Time.deltaTime;
+        float progress = Mathf.Clamp01(elapsed / duration);
+        float damper = 1.0f - progress;
+
+        float ox = (Mathf.PerlinNoise(Time.time * 40f, 0f) - 0.5f) * 2f;
+        float oy = (Mathf.PerlinNoise(0f, Time.time * 40f) - 0.5f) * 2f;
+        Vector3 offset = new Vector3(ox, oy, 0f) * magnitude * damper;
+
+        if (useVisualChild)
+            visualTransform.localPosition = originalLocalPos + offset;
+        else
+            transform.position = originalWorldPos + offset;
+
+        yield return null;
+    }
+
+    // Restaurar posición y color
+    if (useVisualChild)
+        visualTransform.localPosition = originalLocalPos;
+    else
+        transform.position = originalWorldPos;
+
+    if (targetSprite != null)
+        targetSprite.color = originalColor;
+
+    hitCoroutine = null;
+}
+
+private IEnumerator FlashColorCoroutine(Color flashColor, float flashDuration, SpriteRenderer targetSprite)
+{
+    if (targetSprite == null) yield break;
+
+    Color original = targetSprite.color;
+    float half = flashDuration * 0.5f;
+    float t = 0f;
+
+    while (t < half)
+    {
+        t += Time.deltaTime;
+        targetSprite.color = Color.Lerp(original, flashColor, t / half);
+        yield return null;
+    }
+
+    t = 0f;
+    while (t < half)
+    {
+        t += Time.deltaTime;
+        targetSprite.color = Color.Lerp(flashColor, original, t / half);
+        yield return null;
+    }
+
+    targetSprite.color = original;
+}
+
+private void RestoreVisualTransform()
+{
+    if (visualTransform != null)
+        visualTransform.localPosition = Vector3.zero;
+}
 }
