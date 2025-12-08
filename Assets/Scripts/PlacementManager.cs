@@ -68,9 +68,14 @@ public class PlacementManager : MonoBehaviour
     private System.Collections.Generic.HashSet<Vector3Int> occupiedCells =
             new System.Collections.Generic.HashSet<Vector3Int>();
 
+    [Header("Influence")]
+    public InfluenceMap influenceMap;
+
     void Start()
     {
         mainCamera = Camera.main;
+
+        if (influenceMap == null) influenceMap = FindObjectOfType<InfluenceMap>();
 
         // Asignar eventos a los botones
         //botonA.onClick.AddListener(() => SelectCharacter(humanoA));
@@ -285,15 +290,9 @@ public class PlacementManager : MonoBehaviour
         if (tropa)
         {
             Vector3 cellCenter = tilemap.GetCellCenterWorld(cellPos);
-            //cellCenter -= new Vector3(0, tilemap.cellSize.y / 3f, 0);
-
-            // Instanciar el personaje en la celda válida
             GameObject placed = Instantiate(selectedPrefab, cellCenter, Quaternion.identity);
 
-            // Marcar la celda como ocupada
             occupiedCells.Add(cellPos);
-
-            // Restaurar opacidad total
             SetPreviewTransparency(placed, 1f);
 
 
@@ -301,6 +300,16 @@ public class PlacementManager : MonoBehaviour
             if (faseAccionManager != null)
             {
                 faseAccionManager.ClearHighlights();
+            }
+
+            // Recalcular InfluenceMap tras colocar tropa del jugador
+            if (influenceMap != null)
+            {
+                var aiUnits = GameObject.FindGameObjectsWithTag("Enemy");
+                var playerUnits = GameObject.FindGameObjectsWithTag("Aliado");
+                influenceMap.tilemap = tilemap;
+                influenceMap.Compute(new List<GameObject>(aiUnits), new List<GameObject>(playerUnits));
+                // opcional: influenceMap.DebugDrawInfluence(1f);
             }
         }
         else
@@ -317,6 +326,15 @@ public class PlacementManager : MonoBehaviour
 
             // Restaurar opacidad total
             SetPreviewTransparency(placed, 1f);
+
+            // Recalcular también si colocas estructura (si influye en tu diseño; aquí opcional)
+            if (influenceMap != null)
+            {
+                var aiUnits = GameObject.FindGameObjectsWithTag("Enemy");
+                var playerUnits = GameObject.FindGameObjectsWithTag("Aliado");
+                influenceMap.tilemap = tilemap;
+                influenceMap.Compute(new List<GameObject>(aiUnits), new List<GameObject>(playerUnits));
+            }
         }
     }
 
