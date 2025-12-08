@@ -70,7 +70,7 @@ public class AIManager : MonoBehaviour
             Debug.LogWarning("[AIManager] AIGlobal no encontrado. Usando estrategia Equilibrada por defecto.");
         }
 
-        // 4) Fase Colocación (spawns IA si agresiva)
+        // 4) Fase Colocación (spawns IA si agresiva / defensiva)
         yield return StartCoroutine(PlacementPhase(playerUnits, aiGlobal));
 
         // IMPORTANTE: actualizar lista de unidades tras spawns y habilitar movimiento
@@ -91,11 +91,32 @@ public class AIManager : MonoBehaviour
             }
         }
 
+        // Recalcular Influence Map tras los spawns IA (IA positiva, jugador negativa)
+        if (influenceMap != null)
+        {
+            influenceMap.tilemap = tilemap;
+            var currentPlayerUnits = GameObject.FindGameObjectsWithTag("Aliado").ToList();
+            influenceMap.Compute(aiUnits, currentPlayerUnits);
+            // opcional: visualizar para debug
+            // influenceMap.DebugDrawInfluence(1f);
+        }
+
         // 5) Fase Movimiento
         yield return StartCoroutine(MovementPhase(aiUnits, playerUnits));
 
         // 6) Fase Ataque
         yield return StartCoroutine(AttackPhase(aiUnits));
+
+        // Recalcular Influence Map tras mover y atacar (posiciones actualizadas)
+        if (influenceMap != null)
+        {
+            influenceMap.tilemap = tilemap;
+            var updatedAIUnits = GameObject.FindGameObjectsWithTag("Enemy").ToList();
+            var updatedPlayerUnits = GameObject.FindGameObjectsWithTag("Aliado").ToList();
+            influenceMap.Compute(updatedAIUnits, updatedPlayerUnits);
+            // opcional: visualizar para debug
+            // influenceMap.DebugDrawInfluence(1f);
+        }
 
         isAITurn= false;
         // 7) Fin de turno IA: restaurar cosas y devolver turno al jugador

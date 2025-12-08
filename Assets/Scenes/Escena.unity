@@ -159,6 +159,7 @@ MonoBehaviour:
   jugadorManager: {fileID: 1590257514}
   faseAccionManager: {fileID: 769656258}
   faseAtaqueManager: {fileID: 1183659619}
+  influenceMap: {fileID: 0}
 --- !u!4 &124909812
 Transform:
   m_ObjectHideFlags: 0
