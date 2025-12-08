@@ -25,6 +25,11 @@ public class AIManager : MonoBehaviour
     [Tooltip("Capas que marcan ocupación de unidades/estructuras")]
     public LayerMask unitLayer;
 
+    // --- nuevo ajuste: velocidad de movimiento IA (mismo concepto que FaseAccion)
+    [Header("Movimiento IA")]
+    public float aiMoveSpeed = 3f;
+    public float aiStepThreshold = 0.01f;
+
     void Awake()
     {
         if (Instance == null) Instance = this;
@@ -415,7 +420,8 @@ public class AIManager : MonoBehaviour
                                   ? ctrl.datosBase.rangoMovimiento
                                   : 1;
 
-            TacticalOrder order;
+            Vector3Int targetCellForThisUnit = myCell; // por defecto, quedarse
+            bool haveTarget = false;
 
             // Decidir objetivo principal: base si rushBase o no hay tropas del jugador
             bool isFar = rushBase && distToNearestPlayer.TryGetValue(u, out float dval) && dval > avgDist;
@@ -424,15 +430,10 @@ public class AIManager : MonoBehaviour
                 if (tilemap.HasTile(playerBaseCell))
                 {
                     var surroundBaseTarget = PickBestSurroundCell(myCell, playerBaseCell) ?? playerBaseCell;
-                    Vector3Int targetStep = GetStepTowardsWithRange(myCell, surroundBaseTarget, rangoMovimiento);
-
-                    order = (targetStep == myCell)
-                            ? new TacticalOrder(TacticalOrderType.Mantener)
-                            : new TacticalOrder(TacticalOrderType.MoverHaciaZona, targetStep);
-                }
-                else
-                {
-                    order = new TacticalOrder(TacticalOrderType.Mantener);
+                    // escogemos la mejor celda alcanzable hasta rangoMovimiento hacia surroundBaseTarget
+                    Vector3Int step = GetStepTowardsWithRange(myCell, surroundBaseTarget, rangoMovimiento);
+                    targetCellForThisUnit = step;
+                    haveTarget = true;
                 }
             }
             else
@@ -442,27 +443,60 @@ public class AIManager : MonoBehaviour
                 if (nearestCell.HasValue)
                 {
                     var surroundTarget = PickBestSurroundCell(myCell, nearestCell.Value) ?? nearestCell.Value;
-                    Vector3Int targetStep = GetStepTowardsWithRange(myCell, surroundTarget, rangoMovimiento);
-
-                    order = (targetStep == myCell)
-                            ? new TacticalOrder(TacticalOrderType.Mantener)
-                            : new TacticalOrder(TacticalOrderType.MoverHaciaZona, targetStep);
+                    Vector3Int step = GetStepTowardsWithRange(myCell, surroundTarget, rangoMovimiento);
+                    targetCellForThisUnit = step;
+                    haveTarget = true;
                 }
                 else
                 {
                     // Fallback: avanzar hacia la derecha rangoMovimiento pasos
                     Vector3Int desired = myCell + new Vector3Int(rangoMovimiento, 0, 0);
-                    Vector3Int targetStep = GetStepTowardsWithRange(myCell, desired, rangoMovimiento);
-
-                    order = (tilemap != null && tilemap.HasTile(targetStep) &&
-                             (placementManager == null || !placementManager.IsCellOccupied(targetStep)))
-                            ? new TacticalOrder(TacticalOrderType.MoverHaciaZona, targetStep)
-                            : new TacticalOrder(TacticalOrderType.Mantener);
+                    Vector3Int step = GetStepTowardsWithRange(myCell, desired, rangoMovimiento);
+                    targetCellForThisUnit = step;
+                    haveTarget = true;
                 }
             }
 
-            ctrl.ReceiveTacticalOrder(order);
-            yield return new WaitForSeconds(0.05f);
+            if (!haveTarget || targetCellForThisUnit == myCell)
+            {
+                // No hay objetivo o el cálculo dice 'mantener'
+                // En lugar de teletransportar, simplemente no movemos la unidad.
+                // Podrías enviar una orden Mantener para registro (opcional):
+                ctrl.ReceiveTacticalOrder(new TacticalOrder(TacticalOrderType.Mantener));
+                yield return new WaitForSeconds(0.02f);
+                continue;
+            }
+
+            // Ahora: calculamos un PATH real desde myCell hasta targetCellForThisUnit
+            List<Vector3Int> path = FindPathAStar(myCell, targetCellForThisUnit);
+
+            if (path != null && path.Count > 0)
+            {
+                // Iniciar movimiento animado (coroutine). Reservar la primera celda si es distinto a from.
+                yield return StartCoroutine(MoveUnitAlongPath(u, path));
+            }
+            else
+            {
+                // Si no hay ruta, intentar un pequeño paso hacia el objetivo con GetNextStepTowards
+                Vector3Int nextStep = GetNextStepTowards(myCell, targetCellForThisUnit);
+                if (nextStep != myCell &&
+                    tilemap.HasTile(nextStep) &&
+                    (placementManager == null || !placementManager.IsCellOccupied(nextStep)))
+                {
+                    // mover 1 paso interpolado para evitar teletransporte directo
+                    var tmpPath = new List<Vector3Int> { myCell, nextStep };
+                    yield return StartCoroutine(MoveUnitAlongPath(u, tmpPath));
+                }
+                else
+                {
+                    // Mantener si no puede moverse
+                    ctrl.ReceiveTacticalOrder(new TacticalOrder(TacticalOrderType.Mantener));
+                    yield return new WaitForSeconds(0.02f);
+                }
+            }
+
+            // breve pausa entre unidades para que la IA no haga todo instantáneo
+            yield return new WaitForSeconds(0.02f);
         }
     }
 
@@ -624,5 +658,165 @@ public class AIManager : MonoBehaviour
         return current;
     }
 
+    // ============================
+    // NUEVO: A* (4-dir) para IA
+    // ============================
+    private List<Vector3Int> FindPathAStar(Vector3Int start, Vector3Int goal)
+    {
+        if (tilemap == null || placementManager == null) return null;
+        if (!tilemap.HasTile(goal)) return null;
+        // si goal está ocupado, no hay path
+        if (placementManager.IsCellOccupied(goal) && goal != start) return null;
+
+        Dictionary<Vector3Int, Vector3Int> cameFrom = new Dictionary<Vector3Int, Vector3Int>();
+        Dictionary<Vector3Int, int> gScore = new Dictionary<Vector3Int, int>();
+        Dictionary<Vector3Int, int> fScore = new Dictionary<Vector3Int, int>();
+        var openSet = new List<Vector3Int> { start };
+
+        gScore[start] = 0;
+        fScore[start] = Heuristic(start, goal);
+
+        Vector3Int[] directions = new Vector3Int[]
+        {
+            new Vector3Int(1,0,0),
+            new Vector3Int(-1,0,0),
+            new Vector3Int(0,1,0),
+            new Vector3Int(0,-1,0)
+        };
+
+        while (openSet.Count > 0)
+        {
+            // obtener el con menor fScore
+            Vector3Int current = openSet[0];
+            int bestIdx = 0;
+            int bestF = fScore.ContainsKey(current) ? fScore[current] : int.MaxValue;
+            for (int i = 1; i < openSet.Count; i++)
+            {
+                int fi = fScore.ContainsKey(openSet[i]) ? fScore[openSet[i]] : int.MaxValue;
+                if (fi < bestF)
+                {
+                    current = openSet[i];
+                    bestIdx = i;
+                    bestF = fi;
+                }
+            }
+            openSet.RemoveAt(bestIdx);
+
+            if (current == goal)
+            {
+                return ReconstructPath(cameFrom, current);
+            }
+
+            foreach (var dir in directions)
+            {
+                Vector3Int neighbor = current + dir;
+
+                if (!tilemap.HasTile(neighbor)) continue;
+
+                bool occupied = placementManager.IsCellOccupied(neighbor);
+                if (occupied && neighbor != start && neighbor != goal) continue;
+
+                // también chequeo colliders físicos (opcional)
+                Vector3 neighborCenter = tilemap.GetCellCenterWorld(neighbor);
+                Collider2D hit = Physics2D.OverlapPoint(neighborCenter);
+                if (hit != null && neighbor != goal && neighbor != start) continue;
+
+                int tentativeG = gScore.ContainsKey(current) ? gScore[current] + 1 : int.MaxValue;
+                if (!gScore.ContainsKey(neighbor) || tentativeG < gScore[neighbor])
+                {
+                    cameFrom[neighbor] = current;
+                    gScore[neighbor] = tentativeG;
+                    fScore[neighbor] = tentativeG + Heuristic(neighbor, goal);
+                    if (!openSet.Contains(neighbor)) openSet.Add(neighbor);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private int Heuristic(Vector3Int a, Vector3Int b)
+    {
+        return Mathf.Abs(a.x - b.x) + Mathf.Abs(a.y - b.y);
+    }
+
+    private List<Vector3Int> ReconstructPath(Dictionary<Vector3Int, Vector3Int> cameFrom, Vector3Int current)
+    {
+        var totalPath = new List<Vector3Int> { current };
+        while (cameFrom.ContainsKey(current))
+        {
+            current = cameFrom[current];
+            totalPath.Add(current);
+        }
+        totalPath.Reverse();
+        return totalPath;
+    }
+
+    // ===================================
+    // NUEVO: movimiento casilla-a-casilla IA
+    // ===================================
+    IEnumerator MoveUnitAlongPath(GameObject unit, List<Vector3Int> path)
+    {
+        if (unit == null || path == null || path.Count == 0 || placementManager == null || tilemap == null)
+            yield break;
+
+        Tilemap tm = tilemap;
+        Vector3Int fromCell = tm.WorldToCell(unit.transform.position);
+
+        // Asegurarse de que path comienza en fromCell; si no, añadimos
+        int startIndex = 0;
+        if (path[0] == fromCell) startIndex = 1;
+        else
+        {
+            // si el path no comienza en fromCell, insertar para reservar correctamente
+            path.Insert(0, fromCell);
+            startIndex = 1;
+        }
+
+        // Liberar la celda desde donde sale la unidad (la deja)
+        placementManager.SetCellOccupied(fromCell, false);
+
+        for (int i = startIndex; i < path.Count; i++)
+        {
+            Vector3Int nextCell = path[i];
+            Vector3 targetWorld = tm.GetCellCenterWorld(nextCell);
+
+            // Si la celda está ocupada por otro actor justo antes de entrar, cancelamos el movimiento (simple)
+            if (placementManager.IsCellOccupied(nextCell))
+            {
+                // Intentamos fallback: no podemos avanzar más
+                break;
+            }
+
+            // Reservar la celda destino para evitar colisiones con otras unidades IA
+            placementManager.SetCellOccupied(nextCell, true);
+
+            // Interpolación simple
+            while (Vector3.Distance(unit.transform.position, targetWorld) > aiStepThreshold)
+            {
+                unit.transform.position = Vector3.MoveTowards(unit.transform.position, targetWorld, aiMoveSpeed * Time.deltaTime);
+                yield return null;
+            }
+
+            // Aseguramos posición exacta
+            unit.transform.position = targetWorld;
+
+            // Liberar la celda anterior (si es distinto)
+            if (i - 1 >= 0)
+            {
+                Vector3Int prev = path[i - 1];
+                if (prev != nextCell)
+                    placementManager.SetCellOccupied(prev, false);
+            }
+
+            // pequeña espera para suavizar (opcional)
+            yield return null;
+        }
+
+        // Marcar como movida
+        var ctrl = unit.GetComponent<ControladorTropa>();
+        if (ctrl != null) ctrl.MarkMoved();
+
+        yield break;
+    }
 }
-//
