@@ -10,21 +10,21 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9af3505a2eded3b4cb9075877c06679c, type: 3}
-  m_Name: Enemigo Arquero
+  m_Name: MuroInvisible
   m_EditorClassIdentifier: Assembly-CSharp::TropaData
-  nombreTropa: Arquero
-  descripcion: Dispara flechitas.
-  esEstructura: 0
+  nombreTropa: Muro Invisible
+  descripcion: Invisible
+  esEstructura: 1
   esBase: 0
-  esEnemigo: 1
-  vida: 3
-  ataque: 10
-  defensa: 2
-  rangoMovimiento: 2
-  rangoAtaque: 1
-  costeOro: 10
+  esEnemigo: 0
+  vida: 1000
+  ataque: 0
+  defensa: 0
+  rangoMovimiento: 0
+  rangoAtaque: 0
+  costeOro: 0
   costeMadera: 0
   maderaDada: 0
-  oroDado: 5
-  prefabUnidad: {fileID: 835016270662335228, guid: 5129d00ba2b6e3f4fbab57f015bb4bbe, type: 3}
+  oroDado: 0
+  prefabUnidad: {fileID: 1787615214400669952, guid: 4035f5d73b8d4e34d9a952d5fc4fce42, type: 3}
   particulas: {fileID: 8980515756501091494, guid: a06cda076d27eaf43aecad3648e47572, type: 3}

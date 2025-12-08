@@ -48,4 +48,8 @@ public class TropaData : ScriptableObject
     [Header("Recursos Visuales")]
     [Tooltip("El Sprite o Prefab que se usar� para representar la unidad.")]
     public GameObject prefabUnidad;
+
+    [Header("Particulas")]
+    public ParticleSystem particulas;
+    
 }

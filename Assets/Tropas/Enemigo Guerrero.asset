@@ -27,3 +27,4 @@ MonoBehaviour:
   maderaDada: 0
   oroDado: 5
   prefabUnidad: {fileID: 6024261810931218555, guid: db7cc2f714347ab46a0bccefdf9241bc, type: 3}
+  particulas: {fileID: 8980515756501091494, guid: a06cda076d27eaf43aecad3648e47572, type: 3}

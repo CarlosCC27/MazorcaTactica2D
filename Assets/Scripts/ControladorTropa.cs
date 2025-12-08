@@ -93,16 +93,19 @@ public class ControladorTropa : MonoBehaviour
         if (datosBase.esEnemigo)
         {
             Debug.Log($"Enemigo abatido. Recompensa otorgada.");
+
+            Instantiate(datosBase.particulas, transform.position, Quaternion.identity);
+
             jugadorManager.AñadirMadera(datosBase.maderaDada);
             jugadorManager.AñadirOro(datosBase.oroDado);
         }
         else
         {
-            // Lógica si muere un aliado (opcional)
+            
             Debug.Log("Ha muerto un aliado.");
         }
 
-        //Poner aqui corrutina o el sistema de particulas directamente
+        
 
         Destroy(gameObject);
     }
