@@ -1,22 +1,17 @@
 ﻿using UnityEngine;
+using UnityEngine.Tilemaps;
 
-
-// Asegura que este script siempre tenga el componente SpriteRenderer
 [RequireComponent(typeof(SpriteRenderer))]
 public class ControladorTropa : MonoBehaviour
 {
-    // Asigna aquí el Scriptable Object (SO_SoldadoAliado, SO_ArqueroEnemigo, etc.)
     [Header("Datos de la Tropa")]
     public TropaData datosBase;
 
     [Header("Estado de turno")]
-    public bool hasMoved = false; // true si ya se movió esta ronda
+    public bool hasMoved = false;
 
-    // Variables de estado (pueden cambiar durante la partida)
     private int saludActual;
-
     public TacticalOrder currentOrder;
-
     private SpriteRenderer spriteRenderer;
 
     void Awake()
@@ -25,26 +20,21 @@ public class ControladorTropa : MonoBehaviour
 
         if (datosBase == null)
         {
-            Debug.LogError("❌ Error: No se ha asignado un TropaData al ControladorTropa de " + gameObject.name);
+            Debug.LogError("❌ No se ha asignado TropaData a " + gameObject.name);
             return;
         }
 
-        // Inicializar la salud
         saludActual = datosBase.vida;
-
-        // Aplicar la lógica de bando
         AplicarAjustesDeBando();
-
-        // Asegurar Tag correcto para que otros sistemas (FaseAccion/FaseAtaque) detecten
         gameObject.tag = datosBase.esEnemigo ? "Enemy" : "Aliado";
 
-        Debug.Log($"Tropa desplegada: {datosBase.nombreTropa}. Salud: {saludActual}. Enemigo: {datosBase.esEnemigo}");
+        // ⚠️ Importante: no asignamos ninguna orden inicial
+        currentOrder = null;
+        hasMoved = false;
     }
 
-    // =========================================
-    // Ajustar limite 1 movimiento por tropa con cambio de color
-    // =========================================
 
+    #region Movimiento / turno
     public void MarkMoved()
     {
         hasMoved = true;
@@ -65,82 +55,123 @@ public class ControladorTropa : MonoBehaviour
     public void ApplyMovedVisual(bool moved)
     {
         if (spriteRenderer == null) return;
-        // ejemplo simple: atenuar sprite si ya se movió
         spriteRenderer.color = moved ? new Color(1f, 1f, 1f, 0.6f) : new Color(1f, 1f, 1f, 1f);
     }
+    #endregion
 
-
-    // =========================================
-    // 🔹 Ajuste visual y lógico según el bando
-    // =========================================
+    #region Ajustes de bando
     void AplicarAjustesDeBando()
     {
-        // 1. Ajuste visual (Modo Espejo)
-        if (datosBase.esEnemigo)
-        {
-            // Voltear el sprite en el eje X para el modo espejo (flip X)
-            spriteRenderer.flipX = true;
-            // O si usas la escala (depende de tu setup):
-            // transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
-        }
-
-        // 2. Ajuste lógico (Etiquetas/Layer para diferenciar bandos)
-        // Esto es útil para la IA y el sistema de combate.
-        // Poner layer si existe (tener las layers creadas)
+        if (datosBase.esEnemigo) spriteRenderer.flipX = true;
         int layer = datosBase.esEnemigo ? LayerMask.NameToLayer("Enemy") : LayerMask.NameToLayer("Aliado");
-        if (layer != -1)
-            gameObject.layer = layer;
-        //gameObject.layer = datosBase.esEnemigo ? LayerMask.NameToLayer("Enemigo") : LayerMask.NameToLayer("Aliado");
+        if (layer != -1) gameObject.layer = layer;
     }
-    // =========================
-    // Salud / combate
-    // =========================
+    #endregion
+
+    #region Salud / combate
     public void TakeDamage(int cantidad)
     {
         saludActual -= cantidad;
-        Debug.Log($"{datosBase.nombreTropa} recibió {cantidad} daño. Salud restante: {saludActual}");
-
-        if (saludActual <= 0)
-        {
-            Die();
-        }
+        if (saludActual <= 0) Die();
     }
 
     void Die()
     {
-        // Avisar al PlacementManager para liberar la celda si corresponde
         PlacementManager pm = FindObjectOfType<PlacementManager>();
         if (pm != null && pm.tilemap != null)
         {
             Vector3Int cell = pm.tilemap.WorldToCell(transform.position);
             pm.SetCellOccupied(cell, false);
         }
-
-        // Aquí podrías reproducir animación de muerte, efectos, etc.
         Destroy(gameObject);
     }
 
-    public bool IsAlive()
-    {
-        return saludActual > 0;
-    }
-    //getter
-    public int GetSaludActual()
-    {
-        return saludActual;
-    }
+    public bool IsAlive() => saludActual > 0;
+    public int GetSaludActual() => saludActual;
+    public int GetRangoMovimiento() => datosBase.rangoMovimiento;
+    #endregion
 
-    // Método de ejemplo para ser usado por la IA o el Jugador
-    public int GetRangoMovimiento()
-    {
-        return datosBase.rangoMovimiento;
-    }
-
-    // Puedes añadir más lógica como TomarDano(int cantidad), Atacar(Unit objetivo), etc.
-
+    #region Órdenes tácticas
     public void ReceiveTacticalOrder(TacticalOrder order)
     {
+
+        if (!AIManager.Instance.isAITurn) return;
+        // Solo ejecutar si puede moverse
+        if (!CanMoveThisTurn()) return;
+
         currentOrder = order;
         Debug.Log($"[{name}] recibió orden: {order.tipo}");
+
+        switch (order.tipo)
+        {
+            case TacticalOrderType.Avanzar:
+                Vector3Int nextCell = GetNextCellForAdvance(
+                    AIManager.Instance.tilemap,
+                    AIManager.Instance.influenceMap
+                );
+                MoveToCell(nextCell);
+                MarkMoved();
+                break;
+
+            case TacticalOrderType.Retroceder:
+                // placeholder
+                break;
+
+            case TacticalOrderType.Mantener:
+                break;
+
+            case TacticalOrderType.MoverHaciaZona:
+                MoveToCell(order.objetivoCell);
+                MarkMoved();
+                break;
+
+            case TacticalOrderType.AtacarObjetivo:
+                // placeholder
+                break;
+        }
     }
+
+    public Vector3Int GetNextCellForAdvance(Tilemap tilemap, InfluenceMap influenceMap)
+    {
+        Vector3Int current = tilemap.WorldToCell(transform.position);
+        Vector3Int baseAliadaCell = AIManager.Instance.placementManager.GetBaseCell(true); // true = buscar base del jugador
+
+        Vector3Int bestCell = current;
+        float bestScore = float.MaxValue;
+
+        Vector3Int[] dirs = { Vector3Int.up, Vector3Int.down, Vector3Int.left, Vector3Int.right };
+
+        foreach (var dir in dirs)
+        {
+            Vector3Int n = current + dir;
+            if (!tilemap.HasTile(n)) continue;
+            if (AIManager.Instance.placementManager.IsCellOccupied(n)) continue;
+
+            float influence = influenceMap.GetNetInfluence(n);
+            float distanceToBase = Vector3Int.Distance(n, baseAliadaCell);
+
+            float score = -influence + distanceToBase;
+
+            if (score < bestScore)
+            {
+                bestScore = score;
+                bestCell = n;
+            }
+        }
+
+        return bestCell;
+    }
+
+    public void MoveToCell(Vector3Int cell)
+    {
+        PlacementManager pm = AIManager.Instance.placementManager;
+        if (pm.IsCellOccupied(cell)) return;
+
+        Vector3Int current = AIManager.Instance.tilemap.WorldToCell(transform.position);
+        pm.SetCellOccupied(current, false);
+
+        transform.position = AIManager.Instance.tilemap.GetCellCenterWorld(cell);
+        pm.SetCellOccupied(cell, true);
+    }
+    #endregion
 }

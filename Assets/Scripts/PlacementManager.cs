@@ -78,6 +78,18 @@ public class PlacementManager : MonoBehaviour
         //botonE.onClick.AddListener(() => SelectCharacter(estructura));
 
         //PosicionarEnemigoPrueba(enemigoPrueba);
+
+        // Marcar celda de la base como ocupada para impedir spawns encima (si existe BaseMarker)
+        var baseCellEnemy = GetBaseCell(buscarAliada: false);
+        if (tilemap != null && tilemap.HasTile(baseCellEnemy))
+        {
+            SetCellOccupied(baseCellEnemy, true);
+        }
+        var baseCellAlly = GetBaseCell(buscarAliada: true);
+        if (tilemap != null && tilemap.HasTile(baseCellAlly))
+        {
+            SetCellOccupied(baseCellAlly, true);
+        }
     }
 
     void Update()
@@ -352,10 +364,8 @@ public class PlacementManager : MonoBehaviour
     // Permite marcar o desmarcar una celda como ocupada
     public void SetCellOccupied(Vector3Int cell, bool occupied)
     {
-        if (occupied)
-            occupiedCells.Add(cell);
-        else
-            occupiedCells.Remove(cell);
+        if (occupied) occupiedCells.Add(cell);
+        else occupiedCells.Remove(cell);
     }
 
 // Dentro de PlacementManager
@@ -464,11 +474,23 @@ public void RestoreOpacityOfAllUnits()
         Debug.Log("PlacementManager: ResetAllUnitsMovementFlags ejecutado.");
     }
 
+    public void ResetAllEnemyUnitsMovementFlags()
+    {
+        var enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        foreach (var a in enemies)
+        {
+            var ctrl = a.GetComponent<ControladorTropa>();
+            if (ctrl != null)
+                ctrl.ResetMovedFlag();
+        }
+        Debug.Log("PlacementManager: ResetAllUnitsMovementFlags ejecutado.");
+    }
+
 
     // -------------------------------------------------------------
     // NUEVO: PROGRAMACIÓN IA
     // -------------------------------------------------------------
-        // Devuelve todas las celdas válidas del tilemap (iteración simple)
+    // Devuelve todas las celdas válidas del tilemap (iteración simple)
     public IEnumerable<Vector3Int> GetAllValidTiles()
     {
         if (tilemap == null) yield break;
@@ -564,5 +586,21 @@ public void RestoreOpacityOfAllUnits()
                 return cell.x >= enemyPlacementXMin && cell.x <= enemyPlacementXMax;
         }
     }
+
+    // En PlacementManager.cs
+    public Vector3Int GetBaseCell(bool buscarAliada)
+    {
+        BaseMarker[] bases = FindObjectsOfType<BaseMarker>();
+        foreach (var b in bases)
+        {
+            // Si tu SO o BaseMarker tiene la info de esEnemigo
+            if (b.GetComponent<ControladorTropa>().datosBase.esEnemigo != buscarAliada)
+            {
+                return tilemap.WorldToCell(b.transform.position);
+            }
+        }
+        return Vector3Int.zero;
+    }
+
 
 }
