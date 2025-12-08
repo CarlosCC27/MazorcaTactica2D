@@ -15,6 +15,7 @@ MonoBehaviour:
   nombreTropa: Muro
   descripcion: Paulo Joputa Teixeira
   esEstructura: 1
+  esBase: 0
   esEnemigo: 0
   vida: 10
   ataque: 0
@@ -23,4 +24,7 @@ MonoBehaviour:
   rangoAtaque: 0
   costeOro: 0
   costeMadera: 10
+  maderaDada: 0
+  oroDado: 0
   prefabUnidad: {fileID: 1787615214400669952, guid: 04fa448d6cca140459535b060bdb3925, type: 3}
+  particulas: {fileID: 8980515756501091494, guid: a06cda076d27eaf43aecad3648e47572, type: 3}

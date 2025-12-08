@@ -40,8 +40,16 @@ public class TropaData : ScriptableObject
     public int costeOro = 5;
     public int costeMadera = 0;
 
+    [Header("Recursos que dan")]
+    public int maderaDada = 0;
+    public int oroDado = 0;
+
     
     [Header("Recursos Visuales")]
     [Tooltip("El Sprite o Prefab que se usar� para representar la unidad.")]
     public GameObject prefabUnidad;
+
+    [Header("Particulas")]
+    public ParticleSystem particulas;
+    
 }
