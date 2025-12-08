@@ -48,5 +48,8 @@ TagManager:
   - name: Tropas
     uniqueID: 3956451163
     locked: 0
+  - name: Particulas
+    uniqueID: 1006497355
+    locked: 0
   m_RenderingLayers:
   - Default
