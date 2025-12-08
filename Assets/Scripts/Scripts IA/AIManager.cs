@@ -373,98 +373,147 @@ public class AIManager : MonoBehaviour
     }
 
     IEnumerator MovementPhase(List<GameObject> aiUnits, List<GameObject> playerUnits)
+{
+    // Condición: agresiva y IA >= 2x jugador
+    bool rushBase = (AIGlobal.Instance?.currentStrategy ?? AIStrategy.Equilibrada) == AIStrategy.Agresiva
+                    && aiUnits.Count >= playerUnits.Count * 2;
+
+    // Si no hay tropas del jugador, todos a por la base
+    bool noPlayerTroops = playerUnits == null || playerUnits.Count == 0;
+    if (noPlayerTroops) rushBase = true;
+
+    // Celda de la base del jugador (enemiga para la IA)
+    Vector3Int playerBaseCell = Vector3Int.zero;
+    if (placementManager != null)
+        playerBaseCell = placementManager.GetBaseCell(buscarAliada: true);
+
+    // Precomputar distancia de cada unidad IA al jugador más cercano (si hay)
+    var distToNearestPlayer = new Dictionary<GameObject, float>();
+    foreach (var u in aiUnits)
     {
-        // Condición: agresiva y IA >= 2x jugador
-        bool rushBase = (AIGlobal.Instance?.currentStrategy ?? AIStrategy.Equilibrada) == AIStrategy.Agresiva
-                        && aiUnits.Count >= playerUnits.Count * 2;
+        if (u == null) continue;
+        Vector3Int myCell = tilemap.WorldToCell(u.transform.position);
+        var nearestCell = GetNearestPlayerUnitCell(myCell);
+        float d = nearestCell.HasValue ? Vector3Int.Distance(myCell, nearestCell.Value) : Mathf.Infinity;
+        distToNearestPlayer[u] = d;
+    }
 
-        // Si no hay tropas del jugador, todos a por la base
-        bool noPlayerTroops = playerUnits == null || playerUnits.Count == 0;
-        if (noPlayerTroops) rushBase = true;
+    float avgDist = distToNearestPlayer.Count > 0 ? distToNearestPlayer.Values.Average() : 0f;
 
-        // Celda de la base del jugador (enemiga para la IA)
-        Vector3Int playerBaseCell = Vector3Int.zero;
-        if (placementManager != null)
-            playerBaseCell = placementManager.GetBaseCell(buscarAliada: true);
+    // Intentamos reutilizar el A* y MoveAlongPath que ya existe en FaseAccion (para mantener coherencia con el movimiento jugador)
+    var faseAccion = FindObjectOfType<FaseAccion>();
 
-        // Precomputar distancia de cada unidad IA al jugador más cercano (si hay)
-        var distToNearestPlayer = new Dictionary<GameObject, float>();
-        foreach (var u in aiUnits)
+    foreach (var u in aiUnits)
+    {
+        if (u == null) continue;
+        var ctrl = u.GetComponent<ControladorTropa>();
+        if (ctrl == null) continue;
+
+        // No mover si es estructura
+        if (ctrl.datosBase != null && ctrl.datosBase.esEstructura) continue;
+        if (!ctrl.CanMoveThisTurn()) continue;
+
+        Vector3Int myCell = tilemap.WorldToCell(u.transform.position);
+        int rangoMovimiento = (ctrl.datosBase != null && ctrl.datosBase.rangoMovimiento > 0)
+                              ? ctrl.datosBase.rangoMovimiento
+                              : 1;
+
+        Vector3Int targetCell = myCell; // por defecto mantener
+
+        // Decidir objetivo principal: base si rushBase o no hay tropas del jugador
+        bool isFar = rushBase && distToNearestPlayer.TryGetValue(u, out float dval) && dval > avgDist;
+        if ((rushBase && isFar) || noPlayerTroops)
         {
-            if (u == null) continue;
-            Vector3Int myCell = tilemap.WorldToCell(u.transform.position);
-            var nearestCell = GetNearestPlayerUnitCell(myCell);
-            float d = nearestCell.HasValue ? Vector3Int.Distance(myCell, nearestCell.Value) : Mathf.Infinity;
-            distToNearestPlayer[u] = d;
-        }
-
-        float avgDist = distToNearestPlayer.Count > 0 ? distToNearestPlayer.Values.Average() : 0f;
-
-        foreach (var u in aiUnits)
-        {
-            if (u == null) continue;
-            var ctrl = u.GetComponent<ControladorTropa>();
-            if (ctrl == null) continue;
-
-            // No mover si es estructura
-            if (ctrl.datosBase != null && ctrl.datosBase.esEstructura) continue;
-            if (!ctrl.CanMoveThisTurn()) continue;
-
-            Vector3Int myCell = tilemap.WorldToCell(u.transform.position);
-            int rangoMovimiento = (ctrl.datosBase != null && ctrl.datosBase.rangoMovimiento > 0)
-                                  ? ctrl.datosBase.rangoMovimiento
-                                  : 1;
-
-            TacticalOrder order;
-
-            // Decidir objetivo principal: base si rushBase o no hay tropas del jugador
-            bool isFar = rushBase && distToNearestPlayer.TryGetValue(u, out float dval) && dval > avgDist;
-            if ((rushBase && isFar) || noPlayerTroops)
+            if (tilemap.HasTile(playerBaseCell))
             {
-                if (tilemap.HasTile(playerBaseCell))
-                {
-                    var surroundBaseTarget = PickBestSurroundCell(myCell, playerBaseCell) ?? playerBaseCell;
-                    Vector3Int targetStep = GetStepTowardsWithRange(myCell, surroundBaseTarget, rangoMovimiento);
-
-                    order = (targetStep == myCell)
-                            ? new TacticalOrder(TacticalOrderType.Mantener)
-                            : new TacticalOrder(TacticalOrderType.MoverHaciaZona, targetStep);
-                }
-                else
-                {
-                    order = new TacticalOrder(TacticalOrderType.Mantener);
-                }
+                var surroundBaseTarget = PickBestSurroundCell(myCell, playerBaseCell) ?? playerBaseCell;
+                targetCell = surroundBaseTarget;
             }
             else
             {
-                // Rodear a la unidad del jugador más cercana
-                var nearestCell = GetNearestPlayerUnitCell(myCell);
-                if (nearestCell.HasValue)
-                {
-                    var surroundTarget = PickBestSurroundCell(myCell, nearestCell.Value) ?? nearestCell.Value;
-                    Vector3Int targetStep = GetStepTowardsWithRange(myCell, surroundTarget, rangoMovimiento);
+                // mantener si no hay tile de base conocida
+                targetCell = myCell;
+            }
+        }
+        else
+        {
+            // Rodear a la unidad del jugador más cercana
+            var nearestCell = GetNearestPlayerUnitCell(myCell);
+            if (nearestCell.HasValue)
+            {
+                var surroundTarget = PickBestSurroundCell(myCell, nearestCell.Value) ?? nearestCell.Value;
+                targetCell = surroundTarget;
+            }
+            else
+            {
+                // Fallback: avanzar hacia la derecha rangoMovimiento pasos (heurístico)
+                targetCell = myCell + new Vector3Int(rangoMovimiento, 0, 0);
+            }
+        }
 
-                    order = (targetStep == myCell)
-                            ? new TacticalOrder(TacticalOrderType.Mantener)
-                            : new TacticalOrder(TacticalOrderType.MoverHaciaZona, targetStep);
+        // Si el objetivo es la misma celda, no mover
+        if (targetCell == myCell)
+        {
+            yield return new WaitForSeconds(0.02f);
+            continue;
+        }
+
+        bool movementStarted = false;
+
+        // 1) Preferimos usar A* vía FaseAccion si está disponible
+        if (faseAccion != null)
+        {
+            List<Vector3Int> fullPath = faseAccion.FindPathAStar(myCell, targetCell);
+
+            if (fullPath != null && fullPath.Count > 0)
+            {
+                // A* devuelve un path que incluye la celda de inicio normalmente -> saltamos la primera
+                int startIndex = (fullPath[0] == myCell) ? 1 : 0;
+
+                // Limitamos al rango de movimiento (n pasos)
+                int maxIndex = Mathf.Min(fullPath.Count - 1, startIndex + rangoMovimiento);
+                List<Vector3Int> partialPath = new List<Vector3Int>();
+                // Reconstruimos subpath incluyendo la celda actual para compatibilidad con MoveAlongPath
+                partialPath.Add(myCell);
+                for (int i = startIndex; i <= maxIndex; i++)
+                {
+                    partialPath.Add(fullPath[i]);
                 }
-                else
-                {
-                    // Fallback: avanzar hacia la derecha rangoMovimiento pasos
-                    Vector3Int desired = myCell + new Vector3Int(rangoMovimiento, 0, 0);
-                    Vector3Int targetStep = GetStepTowardsWithRange(myCell, desired, rangoMovimiento);
 
-                    order = (tilemap != null && tilemap.HasTile(targetStep) &&
-                             (placementManager == null || !placementManager.IsCellOccupied(targetStep)))
-                            ? new TacticalOrder(TacticalOrderType.MoverHaciaZona, targetStep)
-                            : new TacticalOrder(TacticalOrderType.Mantener);
+                // Si la celda objetivo del segmento es la misma que la actual, saltar
+                if (partialPath.Count > 1)
+                {
+                    // Iniciamos el coroutine de movimiento dentro de FaseAccion (usa tus reservas y SetCellOccupied)
+                    faseAccion.StartCoroutine(faseAccion.MoveAlongPath(u, partialPath));
+                    movementStarted = true;
                 }
             }
-
-            ctrl.ReceiveTacticalOrder(order);
-            yield return new WaitForSeconds(0.05f);
+            // si no hay path válido, caerá al fallback abajo
         }
+
+        // 2) Fallback: si no tenemos FaseAccion o no hay path A*, usar una aproximación simple de 1 paso (que evita teletransporte)
+        if (!movementStarted)
+        {
+            // Calculamos un único paso seguro hacia targetCell respetando rangoMovimiento mínimo 1
+            Vector3Int step = GetStepTowardsWithRange(myCell, targetCell, 1);
+
+            // Si step == myCell -> no hay paso posible, mantenemos
+            if (step != myCell && tilemap.HasTile(step) && (placementManager == null || !placementManager.IsCellOccupied(step)))
+            {
+                // Preferimos usar el controlador pero sin teletransportar: llamamos a ReceiveTacticalOrder con MoverHaciaZona
+                // (si tu ControladorTropa.MoveToCell hiciera teletransporte, entonces hay que evitarlo — en ese caso mejor reservar y mover manualmente)
+                ctrl.ReceiveTacticalOrder(new TacticalOrder(TacticalOrderType.MoverHaciaZona, step));
+                // Nota: ReceiveTacticalOrder en tu ControladorTropa actualmente usa MoveToCell que hace transform.position = ...,
+                // por eso preferimos la ruta A* + MoveAlongPath cuando sea posible.
+                // Para evitar teletransportes adicionales, no llamamos a MarkMoved aquí (el controller lo hace).
+            }
+        }
+
+        // Pequeña pausa entre órdenes para escalonar visualmente
+        yield return new WaitForSeconds(0.05f);
     }
+}
+
 
     // Helper: devuelve el GameObject de la base del jugador
     private GameObject GetPlayerBaseGO()

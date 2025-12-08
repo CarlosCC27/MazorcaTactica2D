@@ -135,7 +135,7 @@ public class FaseAccion : MonoBehaviour
     // ==========================
     // A* Pathfinding (4-dir)
     // ==========================
-    List<Vector3Int> FindPathAStar(Vector3Int start, Vector3Int goal)
+    public List<Vector3Int> FindPathAStar(Vector3Int start, Vector3Int goal)
     {
         var tilemap = placementManager.tilemap;
         if (tilemap == null) return null;
@@ -278,7 +278,7 @@ public class FaseAccion : MonoBehaviour
     // ==========================
     // Movimiento animado
     // ==========================
-    IEnumerator MoveAlongPath(GameObject unit, List<Vector3Int> path)
+    public IEnumerator MoveAlongPath(GameObject unit, List<Vector3Int> path)
     {
         if (unit == null || path == null || path.Count == 0 || placementManager == null) yield break;
 
