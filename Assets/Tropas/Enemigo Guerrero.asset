@@ -15,6 +15,7 @@ MonoBehaviour:
   nombreTropa: Guerrero
   descripcion: Te mete un guantazo de cerca que te deja tonto.
   esEstructura: 0
+  esBase: 0
   esEnemigo: 1
   vida: 5
   ataque: 2
@@ -23,4 +24,6 @@ MonoBehaviour:
   rangoAtaque: 1
   costeOro: 5
   costeMadera: 0
+  maderaDada: 0
+  oroDado: 5
   prefabUnidad: {fileID: 6024261810931218555, guid: db7cc2f714347ab46a0bccefdf9241bc, type: 3}

@@ -24,4 +24,6 @@ MonoBehaviour:
   rangoAtaque: 0
   costeOro: 0
   costeMadera: 10
+  maderaDada: 0
+  oroDado: 0
   prefabUnidad: {fileID: 1787615214400669952, guid: cda105b535695c449909426039c0a2d1, type: 3}

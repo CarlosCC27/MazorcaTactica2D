@@ -7,6 +7,9 @@ public class ControladorTropa : MonoBehaviour
     [Header("Datos de la Tropa")]
     public TropaData datosBase;
 
+    [Header("Datos jugador")]
+    public JugadorManager jugadorManager;
+
     [Header("Estado de turno")]
     public bool hasMoved = false;
 
@@ -17,6 +20,8 @@ public class ControladorTropa : MonoBehaviour
     void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
+
+        jugadorManager = FindObjectOfType<JugadorManager>();
 
         if (datosBase == null)
         {
@@ -83,6 +88,22 @@ public class ControladorTropa : MonoBehaviour
             Vector3Int cell = pm.tilemap.WorldToCell(transform.position);
             pm.SetCellOccupied(cell, false);
         }
+
+
+        if (datosBase.esEnemigo)
+        {
+            Debug.Log($"Enemigo abatido. Recompensa otorgada.");
+            jugadorManager.AñadirMadera(datosBase.maderaDada);
+            jugadorManager.AñadirOro(datosBase.oroDado);
+        }
+        else
+        {
+            // Lógica si muere un aliado (opcional)
+            Debug.Log("Ha muerto un aliado.");
+        }
+
+        //Poner aqui corrutina o el sistema de particulas directamente
+
         Destroy(gameObject);
     }
 

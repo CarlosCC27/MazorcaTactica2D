@@ -15,6 +15,7 @@ MonoBehaviour:
   nombreTropa: Arquero
   descripcion: Dispara flechitas.
   esEstructura: 0
+  esBase: 0
   esEnemigo: 0
   vida: 3
   ataque: 5
@@ -23,4 +24,6 @@ MonoBehaviour:
   rangoAtaque: 3
   costeOro: 10
   costeMadera: 0
+  maderaDada: 0
+  oroDado: 0
   prefabUnidad: {fileID: 835016270662335228, guid: 5129d00ba2b6e3f4fbab57f015bb4bbe, type: 3}
