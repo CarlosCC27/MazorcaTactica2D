@@ -21,10 +21,10 @@ MonoBehaviour:
   ataque: 0
   defensa: 0
   rangoMovimiento: 1
-  rangoAtaque: 0
+  rangoAtaque: 1
   costeOro: 0
-  costeMadera: 0
-  maderaDada: 10
-  oroDado: 10
+  costeMadera: 15
+  maderaDada: 0
+  oroDado: 0
   prefabUnidad: {fileID: 6024261810931218555, guid: 2a0b8d588b42d3d4ebe5acd7ab434bbb, type: 3}
   particulas: {fileID: 8980515756501091494, guid: a06cda076d27eaf43aecad3648e47572, type: 3}

@@ -195,7 +195,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c5b7452945e1d749ab5db4162dc6880, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ControladorTropa
-  datosBase: {fileID: 11400000, guid: 82c7da5ee4aa637498b60bc837148b6b, type: 2}
+  datosBase: {fileID: 11400000, guid: dccb542ebd6af4f4bbbcf44e76851388, type: 2}
   jugadorManager: {fileID: 0}
   hasMoved: 0
 --- !u!61 &8582445227973146452
@@ -235,7 +235,7 @@ BoxCollider2D:
   m_Offset: {x: 0, y: 0.15625}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
+    pivot: {x: 0.5, y: 0.25}
     oldSize: {x: 0.9166667, y: 0.8333333}
     newSize: {x: 1, y: 0.625}
     adaptiveTilingThreshold: 0.5
