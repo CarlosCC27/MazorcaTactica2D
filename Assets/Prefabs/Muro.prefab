@@ -105,6 +105,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ControladorTropa
   datosBase: {fileID: 11400000, guid: e7ca9bd817988e64398c1029f8d27abc, type: 2}
+  jugadorManager: {fileID: 0}
+  hasMoved: 0
 --- !u!61 &2598358217568695371
 BoxCollider2D:
   m_ObjectHideFlags: 0

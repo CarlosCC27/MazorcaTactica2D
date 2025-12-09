@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9af3505a2eded3b4cb9075877c06679c, type: 3}
+  m_Name: Escudo
+  m_EditorClassIdentifier: Assembly-CSharp::TropaData
+  nombreTropa: Escudo Enemigo
+  descripcion: Escudazo
+  esEstructura: 0
+  esBase: 0
+  esEnemigo: 0
+  vida: 10
+  ataque: 0
+  defensa: 0
+  rangoMovimiento: 1
+  rangoAtaque: 0
+  costeOro: 0
+  costeMadera: 0
+  maderaDada: 10
+  oroDado: 10
+  prefabUnidad: {fileID: 6024261810931218555, guid: 2a0b8d588b42d3d4ebe5acd7ab434bbb, type: 3}
+  particulas: {fileID: 8980515756501091494, guid: a06cda076d27eaf43aecad3648e47572, type: 3}

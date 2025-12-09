@@ -19,8 +19,8 @@ public class ControladorTropa : MonoBehaviour
     private SpriteRenderer spriteRenderer;
 
     private Transform visualTransform;            // Transform del child visual (si existe)
-private SpriteRenderer visualSpriteRenderer;  // SpriteRenderer sobre el child (si existe)
-private Coroutine hitCoroutine = null;        // control de coroutine de hit
+    private SpriteRenderer visualSpriteRenderer;  // SpriteRenderer sobre el child (si existe)
+    private Coroutine hitCoroutine = null;        // control de coroutine de hit
 
     void Awake()
     {
@@ -219,20 +219,20 @@ private Coroutine hitCoroutine = null;        // control de coroutine de hit
 
 
     public void PlayHitVibration(float duration = 0.25f, float magnitude = 0.12f, float flashDuration = 0.12f)
-{
-    // Si ya hay coroutine de hit, reiniciarla
-    if (hitCoroutine != null)
     {
-        StopCoroutine(hitCoroutine);
-        RestoreVisualTransform();
-        hitCoroutine = null;
+        // Si ya hay coroutine de hit, reiniciarla
+        if (hitCoroutine != null)
+        {
+            StopCoroutine(hitCoroutine);
+            RestoreVisualTransform();
+            hitCoroutine = null;
+        }
+
+        hitCoroutine = StartCoroutine(HitVibrationCoroutine(duration, magnitude, flashDuration));
     }
 
-    hitCoroutine = StartCoroutine(HitVibrationCoroutine(duration, magnitude, flashDuration));
-}
-
-private IEnumerator HitVibrationCoroutine(float duration, float magnitude, float flashDuration)
-{
+    private IEnumerator HitVibrationCoroutine(float duration, float magnitude, float flashDuration)
+    {
     bool useVisualChild = (visualTransform != null);
     Vector3 originalWorldPos = transform.position;
     Vector3 originalLocalPos = Vector3.zero;
@@ -278,37 +278,66 @@ private IEnumerator HitVibrationCoroutine(float duration, float magnitude, float
         targetSprite.color = originalColor;
 
     hitCoroutine = null;
-}
-
-private IEnumerator FlashColorCoroutine(Color flashColor, float flashDuration, SpriteRenderer targetSprite)
-{
-    if (targetSprite == null) yield break;
-
-    Color original = targetSprite.color;
-    float half = flashDuration * 0.5f;
-    float t = 0f;
-
-    while (t < half)
-    {
-        t += Time.deltaTime;
-        targetSprite.color = Color.Lerp(original, flashColor, t / half);
-        yield return null;
     }
 
-    t = 0f;
-    while (t < half)
+    private IEnumerator FlashColorCoroutine(Color flashColor, float flashDuration, SpriteRenderer targetSprite)
     {
-        t += Time.deltaTime;
-        targetSprite.color = Color.Lerp(flashColor, original, t / half);
-        yield return null;
+        if (targetSprite == null) yield break;
+
+        Color original = targetSprite.color;
+        float half = flashDuration * 0.5f;
+        float t = 0f;
+
+        while (t < half)
+        {
+            t += Time.deltaTime;
+            targetSprite.color = Color.Lerp(original, flashColor, t / half);
+            yield return null;
+        }
+
+        t = 0f;
+        while (t < half)
+        {
+            t += Time.deltaTime;
+            targetSprite.color = Color.Lerp(flashColor, original, t / half);
+            yield return null;
+        }
+
+        targetSprite.color = original;
     }
 
-    targetSprite.color = original;
-}
+    private void RestoreVisualTransform()
+    {
+        if (visualTransform != null)
+            visualTransform.localPosition = Vector3.zero;
+    }
 
-private void RestoreVisualTransform()
-{
-    if (visualTransform != null)
-        visualTransform.localPosition = Vector3.zero;
-}
+    public void ModificarVida(int cantidad)
+    {
+        // Si es positivo cura, si es negativo daña
+        saludActual += cantidad;
+
+        // Evitar que tenga más vida que la máxima original
+        if (saludActual > datosBase.vida) saludActual = datosBase.vida;
+
+        Debug.Log($"{name} vida modificada. Actual: {saludActual}");
+        // Pequeño feedback visual (Verde)
+        if (cantidad > 0) StartCoroutine(FlashColorCoroutine(Color.green, 0.2f, spriteRenderer));
+    }
+
+    public void ModificarAtaque(int multiplicador)
+    {
+        datosBase.ataque *= multiplicador;
+        Debug.Log($"{name} ataque multiplicado x{multiplicador}. Actual: {datosBase.ataque}");
+        // Pequeño feedback visual (Rojo oscuro)
+        StartCoroutine(FlashColorCoroutine(new Color(0.6f, 0f, 0f), 0.2f, spriteRenderer));
+    }
+
+    public void ModificarRango(int suma)
+    {
+        datosBase.rangoAtaque += suma;
+        Debug.Log($"{name} rango aumentado +{suma}. Actual: {datosBase.rangoAtaque}");
+        // Pequeño feedback visual (Morado)
+        StartCoroutine(FlashColorCoroutine(new Color(0.5f, 0f, 0.5f), 0.2f, spriteRenderer));
+    }
 }
