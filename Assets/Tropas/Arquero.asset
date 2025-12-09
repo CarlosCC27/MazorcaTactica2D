@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Arquero
   m_EditorClassIdentifier: Assembly-CSharp::TropaData
   nombreTropa: Arquero
-  descripcion: Dispara flechitas.
+  descripcion: Dispara flechas.
   esEstructura: 0
   esBase: 0
   esEnemigo: 0
